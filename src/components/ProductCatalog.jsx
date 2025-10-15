@@ -36,7 +36,7 @@ const ProductCatalog = ({ onTryOn }) => {
   }
 
   return (
-    <section className="py-20 px-4 bg-primary-200">
+    <section className="py-20 px-4 bg-primary-200 dark:bg-slate-800">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -44,10 +44,10 @@ const ProductCatalog = ({ onTryOn }) => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
             Experience Our Technology
           </h2>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
             Explore interactive demos across all product categories
           </p>
         </motion.div>
@@ -61,7 +61,7 @@ const ProductCatalog = ({ onTryOn }) => {
               className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
                 selectedCategory === category.id
                   ? 'bg-primary-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
+                  : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-600'
               }`}
             >
               <span className="mr-2">{category.icon}</span>
@@ -126,22 +126,22 @@ const ProductCatalog = ({ onTryOn }) => {
                 </div>
 
                 {/* Category Badge */}
-                <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold">
+                <div className="absolute top-3 left-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-semibold dark:text-white">
                   {product.category}
                 </div>
               </div>
 
               {/* Product Info */}
               <div className="p-4">
-                <h3 className="font-bold text-lg mb-2 line-clamp-1">{product.name}</h3>
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2">{product.description}</p>
+                <h3 className="font-bold text-lg mb-2 line-clamp-1 dark:text-white">{product.name}</h3>
+                <p className="text-gray-600 dark:text-slate-300 text-sm mb-3 line-clamp-2">{product.description}</p>
                 
                 {/* Colors */}
                 <div className="flex gap-2 mb-3">
                   {product.colors.slice(0, 3).map((color, i) => (
                     <div
                       key={i}
-                      className="w-6 h-6 rounded-full border-2 border-gray-300"
+                      className="w-6 h-6 rounded-full border-2 border-gray-300 dark:border-slate-600"
                       style={{ 
                         backgroundColor: color.toLowerCase() === 'white' ? '#fff' : 
                                        color.toLowerCase() === 'black' ? '#000' :

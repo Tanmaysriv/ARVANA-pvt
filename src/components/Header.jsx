@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Menu, X, Sparkles, ArrowRight } from 'lucide-react'
+import { Menu, X, Sparkles, ArrowRight, Sun, Moon } from 'lucide-react'
+import { useTheme } from '../context/ThemeContext'
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { theme, toggleTheme } = useTheme()
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 glass-effect shadow-lg backdrop-blur-xl border-b border-white/20">
+    <header className="fixed top-0 left-0 right-0 z-40 glass-effect shadow-lg backdrop-blur-xl border-b border-white/20 dark:border-slate-700/20">
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
@@ -21,22 +23,36 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#home" className="relative text-slate-700 hover:text-sky-600 transition-all font-medium group">
+            <a href="#home" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
               Home
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#solutions" className="relative text-slate-700 hover:text-sky-600 transition-all font-medium group">
+            <a href="#solutions" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
               Solutions
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#catalog" className="relative text-slate-700 hover:text-sky-600 transition-all font-medium group">
+            <a href="#catalog" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
               Categories
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
             </a>
-            <a href="#contact" className="relative text-slate-700 hover:text-sky-600 transition-all font-medium group">
+            <a href="#contact" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
               Contact
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
             </a>
+            
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-110 active:scale-95"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5 text-yellow-500" />
+              ) : (
+                <Moon className="w-5 h-5 text-slate-700" />
+              )}
+            </button>
+            
             <a 
               href="#contact"
               className="flex items-center space-x-2 btn-primary group"
@@ -46,13 +62,26 @@ const Header = () => {
             </a>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-gray-700"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Menu Button & Theme Toggle */}
+          <div className="md:hidden flex items-center space-x-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5 text-yellow-500" />
+              ) : (
+                <Moon className="w-5 h-5 text-slate-700" />
+              )}
+            </button>
+            <button
+              className="text-gray-700 dark:text-gray-300"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
@@ -61,28 +90,28 @@ const Header = () => {
             <a 
               href="#home" 
               onClick={() => setIsMenuOpen(false)}
-              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+              className="block text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors font-medium"
             >
               Home
             </a>
             <a 
               href="#solutions" 
               onClick={() => setIsMenuOpen(false)}
-              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+              className="block text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors font-medium"
             >
               Solutions
             </a>
             <a 
               href="#catalog" 
               onClick={() => setIsMenuOpen(false)}
-              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+              className="block text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors font-medium"
             >
               Categories
             </a>
             <a 
               href="#contact" 
               onClick={() => setIsMenuOpen(false)}
-              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+              className="block text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors font-medium"
             >
               Contact
             </a>

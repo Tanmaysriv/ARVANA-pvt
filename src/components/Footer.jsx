@@ -2,7 +2,7 @@ import { Sparkles, Mail, MapPin, Phone } from 'lucide-react'
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12 px-4">
+    <footer className="bg-gray-900 dark:bg-black text-gray-300 dark:text-slate-400 py-12 px-4">
       <div className="container mx-auto">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}

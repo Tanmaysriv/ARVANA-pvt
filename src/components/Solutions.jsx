@@ -111,7 +111,7 @@ const Solutions = () => {
   ]
 
   return (
-    <section id="solutions" className="py-20 bg-primary-200">
+    <section id="solutions" className="py-20 bg-primary-200 dark:bg-slate-800">
       <div className="container mx-auto px-6">
         {/* Section Header */}
         <motion.div
@@ -120,10 +120,10 @@ const Solutions = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
             Virtual Try On and 3D Solutions
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+          <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
             Transform your fashion business with our comprehensive AR and 3D technology suite
           </p>
         </motion.div>
@@ -139,7 +139,7 @@ const Solutions = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group"
+                className="bg-white dark:bg-slate-700 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group"
               >
                 {/* Header */}
                 <div className={`bg-gradient-to-r ${solution.color} p-6 text-white`}>
@@ -160,12 +160,12 @@ const Solutions = () => {
                     return (
                       <div 
                         key={idx}
-                        className="flex items-start space-x-3 group/item hover:bg-slate-50 p-3 rounded-lg transition-colors"
+                        className="flex items-start space-x-3 group/item hover:bg-slate-50 dark:hover:bg-slate-600 p-3 rounded-lg transition-colors"
                       >
-                        <div className="flex-shrink-0 w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center group-hover/item:bg-sky-100 transition-colors">
-                          <BenefitIcon className="w-5 h-5 text-slate-600 group-hover/item:text-sky-600 transition-colors" />
+                        <div className="flex-shrink-0 w-10 h-10 bg-slate-100 dark:bg-slate-600 rounded-lg flex items-center justify-center group-hover/item:bg-sky-100 dark:group-hover/item:bg-sky-900 transition-colors">
+                          <BenefitIcon className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover/item:text-sky-600 dark:group-hover/item:text-sky-400 transition-colors" />
                         </div>
-                        <p className="text-slate-700 leading-relaxed">
+                        <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
                           {benefit.text}
                         </p>
                       </div>

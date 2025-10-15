@@ -114,7 +114,7 @@ const CategoryShowcase = () => {
   ]
 
   return (
-    <section className="py-20 bg-primary-100">
+    <section className="py-20 bg-primary-100 dark:bg-slate-900">
       <div className="container mx-auto px-6">
         {categories.map((category, index) => (
           <motion.div
@@ -136,10 +136,10 @@ const CategoryShowcase = () => {
                     className="relative rounded-2xl shadow-2xl w-full h-[500px] object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   {/* Floating Badge */}
-                  <div className="absolute top-6 right-6 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
+                  <div className="absolute top-6 right-6 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg">
                     <div className="flex items-center space-x-2">
                       <Sparkles className="w-4 h-4 text-sky-600" />
-                      <span className="font-semibold text-slate-900">AR Enabled</span>
+                      <span className="font-semibold text-slate-900 dark:text-white">AR Enabled</span>
                     </div>
                   </div>
                 </div>
@@ -147,15 +147,15 @@ const CategoryShowcase = () => {
 
               {/* Content Side */}
               <div className={`${index % 2 === 1 ? 'md:order-1' : ''}`}>
-                <div className="inline-block bg-sky-100 text-sky-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <div className="inline-block bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 px-4 py-2 rounded-full text-sm font-semibold mb-4">
                   {category.name}
                 </div>
                 
-                <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+                <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
                   {category.tagline}
                 </h2>
                 
-                <p className="text-lg text-slate-600 mb-6 leading-relaxed">
+                <p className="text-lg text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
                   {category.description}
                 </p>
 
@@ -166,24 +166,24 @@ const CategoryShowcase = () => {
                       <div className="flex-shrink-0 w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center mt-0.5">
                         <Check className="w-4 h-4 text-emerald-600" />
                       </div>
-                      <span className="text-slate-700">{feature}</span>
+                      <span className="text-slate-700 dark:text-slate-300">{feature}</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-8 bg-slate-50 rounded-xl p-6">
+                <div className="grid grid-cols-3 gap-4 mb-8 bg-slate-50 dark:bg-slate-800 rounded-xl p-6">
                   <div className="text-center">
                     <div className="text-3xl font-bold text-sky-600 mb-1">{category.stats.conversion}</div>
-                    <div className="text-sm text-slate-600">Conversion</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Conversion</div>
                   </div>
-                  <div className="text-center border-x border-slate-200">
+                  <div className="text-center border-x border-slate-200 dark:border-slate-700">
                     <div className="text-3xl font-bold text-purple-600 mb-1">{category.stats.returns}</div>
-                    <div className="text-sm text-slate-600">Returns</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Returns</div>
                   </div>
                   <div className="text-center">
                     <div className="text-3xl font-bold text-emerald-600 mb-1">{category.stats.engagement}</div>
-                    <div className="text-sm text-slate-600">Engagement</div>
+                    <div className="text-sm text-slate-600 dark:text-slate-400">Engagement</div>
                   </div>
                 </div>
 

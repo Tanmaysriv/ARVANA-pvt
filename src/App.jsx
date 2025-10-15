@@ -46,7 +46,7 @@ function App() {
 
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <div className="min-h-screen bg-primary-100">
+      <div className="min-h-screen bg-primary-100 dark:bg-slate-900">
         <Header />
         
         <Routes>

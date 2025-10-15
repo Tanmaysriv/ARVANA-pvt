@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:clean": "vite --force",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
@@ -20,6 +21,7 @@
     "@tensorflow-models/hand-pose-detection": "^2.0.0",
     "@tensorflow-models/pose-detection": "^2.0.0",
     "@tensorflow/tfjs": "^4.2.0",
+    "@tensorflow/tfjs-backend-webgpu": "^4.2.0",
     "clsx": "^2.0.0",
     "framer-motion": "^10.16.16",
     "long": "^5.3.2",

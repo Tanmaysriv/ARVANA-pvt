@@ -44,7 +44,7 @@ const HeroB2B = ({ onOpenVideo }) => {
   return (
     <>
       {/* Main Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black dark:bg-slate-950">
         {/* Background Image */}
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1441986300917-64674bd600d8')] bg-cover bg-center opacity-10"></div>
         
@@ -123,7 +123,7 @@ const HeroB2B = ({ onOpenVideo }) => {
       </section>
 
       {/* Category Showcase Section */}
-      <section className="py-20 bg-primary-50">
+      <section className="py-20 bg-primary-50 dark:bg-slate-800">
         <div className="container mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -131,10 +131,10 @@ const HeroB2B = ({ onOpenVideo }) => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4">
               Solutions for Every Category
             </h2>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto">
               Industry-leading virtual try-on and 3D visualization technology 
               tailored for your product category
             </p>
@@ -149,7 +149,7 @@ const HeroB2B = ({ onOpenVideo }) => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
-                className="group relative overflow-hidden rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
+                className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-700 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
               >
                 {/* Image */}
                 <div className="relative h-64 overflow-hidden">
@@ -161,22 +161,22 @@ const HeroB2B = ({ onOpenVideo }) => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                   
                   {/* Icon */}
-                  <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-4xl">
+                  <div className="absolute top-4 right-4 w-16 h-16 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full flex items-center justify-center text-4xl">
                     {category.icon}
                   </div>
                 </div>
 
                 {/* Content */}
                 <div className="p-6">
-                  <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
                     {category.name}
                   </h3>
-                  <p className="text-slate-600 mb-4">
+                  <p className="text-slate-600 dark:text-slate-300 mb-4">
                     {category.desc}
                   </p>
                   <a 
                     href={`#${category.name.toLowerCase()}`}
-                    className="inline-flex items-center text-sky-600 font-semibold hover:text-sky-700 group-hover:gap-2 transition-all"
+                    className="inline-flex items-center text-sky-600 dark:text-sky-400 font-semibold hover:text-sky-700 dark:hover:text-sky-300 group-hover:gap-2 transition-all"
                   >
                     Explore {category.name}
                     <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />

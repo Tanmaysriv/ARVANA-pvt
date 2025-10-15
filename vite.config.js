@@ -6,5 +6,28 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true
+  },
+  optimizeDeps: {
+    exclude: [],
+    esbuildOptions: {
+      target: 'esnext',
+      define: {
+        'global': 'globalThis',
+        'module': '{}',
+        'exports': '{}'
+      }
+    }
+  },
+  define: {
+    'global': 'globalThis',
+    'module': '{}',
+    'process.env': {}
+  },
+  build: {
+    target: 'esnext',
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true
+    }
   }
 })

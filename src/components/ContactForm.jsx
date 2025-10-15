@@ -51,7 +51,7 @@ const ContactForm = () => {
   }
 
   return (
-    <section id="contact" className="py-20 bg-black relative overflow-hidden">
+    <section id="contact" className="py-20 bg-black dark:bg-slate-950 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
@@ -111,12 +111,12 @@ const ContactForm = () => {
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="bg-white rounded-2xl shadow-2xl p-8"
+            className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8"
           >
             {!submitted ? (
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     Full Name *
                   </label>
                   <div className="relative">
@@ -127,14 +127,14 @@ const ContactForm = () => {
                       required
                       value={formData.name}
                       onChange={handleChange}
-                      className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       placeholder="John Doe"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     Work Email *
                   </label>
                   <div className="relative">
@@ -145,14 +145,14 @@ const ContactForm = () => {
                       required
                       value={formData.email}
                       onChange={handleChange}
-                      className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       placeholder="john@company.com"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     Company Name *
                   </label>
                   <div className="relative">
@@ -163,14 +163,14 @@ const ContactForm = () => {
                       required
                       value={formData.company}
                       onChange={handleChange}
-                      className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       placeholder="Your Company"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     Phone Number
                   </label>
                   <div className="relative">
@@ -180,14 +180,14 @@ const ContactForm = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className="w-full pl-11 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                      className="w-full pl-11 pr-4 py-3 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                       placeholder="+1 (555) 123-4567"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     Product Category *
                   </label>
                   <select
@@ -195,7 +195,7 @@ const ContactForm = () => {
                     required
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
+                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all"
                   >
                     <option value="">Select a category</option>
                     {categories.map(cat => (
@@ -205,7 +205,7 @@ const ContactForm = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
                     Message
                   </label>
                   <textarea
@@ -213,7 +213,7 @@ const ContactForm = () => {
                     value={formData.message}
                     onChange={handleChange}
                     rows="4"
-                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all resize-none"
+                    className="w-full px-4 py-3 border border-slate-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-transparent transition-all resize-none"
                     placeholder="Tell us about your needs..."
                   ></textarea>
                 </div>
@@ -239,10 +239,10 @@ const ContactForm = () => {
                 <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <CheckCircle className="w-12 h-12 text-emerald-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                   Thank You!
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-slate-600 dark:text-slate-300">
                   We've received your request. Our team will contact you within 24 hours.
                 </p>
               </motion.div>

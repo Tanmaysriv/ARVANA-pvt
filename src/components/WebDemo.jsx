@@ -44,7 +44,7 @@ const WebDemo = () => {
   ]
 
   return (
-    <section className="py-20 bg-black relative overflow-hidden">
+    <section className="py-20 bg-black dark:bg-slate-950 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{

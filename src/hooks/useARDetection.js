@@ -1,10 +1,31 @@
 import { useState, useEffect, useRef } from 'react'
+import { tf } from '../utils/tfjs-setup'
+import * as poseDetection from '@tensorflow-models/pose-detection'
+import * as handPoseDetection from '@tensorflow-models/hand-pose-detection'
+
+// Model cache to avoid reloading
+const modelCache = {
+  pose: null,
+  hand: null,
+  face: null
+}
+
+// Configuration for efficient inference
+const INFERENCE_CONFIG = {
+  frameSkip: 2, // Process every 2nd frame for better performance
+  minConfidence: 0.5,
+  maxPoses: 1,
+  maxHands: 2
+}
 
 export const useARDetection = (videoRef, canvasRef, category, productImage) => {
   const [detections, setDetections] = useState(null)
   const [isModelLoaded, setIsModelLoaded] = useState(false)
   const animationFrameRef = useRef(null)
   const productImgRef = useRef(null)
+  const detectorRef = useRef(null)
+  const frameCountRef = useRef(0)
+  const isProcessingRef = useRef(false)
 
   useEffect(() => {
     loadModel()
@@ -27,51 +48,129 @@ export const useARDetection = (videoRef, canvasRef, category, productImage) => {
 
   const loadModel = async () => {
     try {
-      // Simulate model loading
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Configure TensorFlow.js for optimal performance
+      await tf.ready()
+      
+      // Force WebGL backend (avoid WebGPU)
+      const backend = tf.getBackend()
+      if (backend !== 'webgl') {
+        await tf.setBackend('webgl')
+      }
+      
+      // Enable memory optimization flags
+      tf.env().set('WEBGL_DELETE_TEXTURE_THRESHOLD', 0)
+      tf.env().set('WEBGL_FORCE_F16_TEXTURES', true)
+      
+      console.log('TensorFlow.js backend:', tf.getBackend())
+      console.log('Memory info:', tf.memory())
+      
+      // Load appropriate model based on category
+      switch (category) {
+        case 'shoes':
+        case 'clothes':
+          await loadPoseModel()
+          break
+        case 'watches':
+        case 'bags':
+          await loadHandModel()
+          break
+        default:
+          await loadPoseModel()
+      }
+      
       setIsModelLoaded(true)
-      setDetections({ demo: true })
     } catch (error) {
       console.error('Error loading model:', error)
+      setIsModelLoaded(false)
     }
+  }
+
+  const loadPoseModel = async () => {
+    if (modelCache.pose) {
+      detectorRef.current = modelCache.pose
+      console.log('Using cached pose model')
+      return
+    }
+    
+    console.log('Loading pose detection model...')
+    const model = poseDetection.SupportedModels.BlazePose
+    const detectorConfig = {
+      runtime: 'tfjs',
+      modelType: 'lite',
+      enableSmoothing: true
+    }
+    
+    const detector = await poseDetection.createDetector(model, detectorConfig)
+    modelCache.pose = detector
+    detectorRef.current = detector
+    console.log('Pose model loaded successfully')
+  }
+
+  const loadHandModel = async () => {
+    if (modelCache.hand) {
+      detectorRef.current = modelCache.hand
+      console.log('Using cached hand model')
+      return
+    }
+    
+    console.log('Loading hand detection model...')
+    const model = handPoseDetection.SupportedModels.MediaPipeHands
+    const detectorConfig = {
+      runtime: 'tfjs',
+      modelType: 'lite', // Use lite model for better performance
+      maxHands: INFERENCE_CONFIG.maxHands,
+      detectorModelUrl: undefined, // Use default CDN
+      landmarkModelUrl: undefined
+    }
+    
+    const detector = await handPoseDetection.createDetector(model, detectorConfig)
+    modelCache.hand = detector
+    detectorRef.current = detector
+    console.log('Hand model loaded successfully')
   }
 
   const startDetection = () => {
     if (!videoRef.current || !canvasRef.current) return
     
-    const detectFrame = () => {
+    const detectFrame = async () => {
       if (videoRef.current && videoRef.current.readyState === 4) {
         const video = videoRef.current
         const canvas = canvasRef.current
         
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-        
-        const ctx = canvas.getContext('2d')
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
-        
-        const centerX = canvas.width / 2
-        const centerY = canvas.height / 2
-        
-        ctx.save()
-        
-        // Draw AR overlay based on category with product image
-        switch (category) {
-          case 'shoes':
-            drawShoes(ctx, centerX, canvas.height, canvas.width)
-            break
-          case 'watches':
-            drawWatch(ctx, centerX, centerY)
-            break
-          case 'bags':
-            drawBag(ctx, centerX, centerY)
-            break
-          case 'clothes':
-            drawClothes(ctx, centerX, centerY, canvas.width)
-            break
+        // Set canvas dimensions only once or when changed
+        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+          canvas.width = video.videoWidth
+          canvas.height = video.videoHeight
         }
         
-        ctx.restore()
+        const ctx = canvas.getContext('2d', { alpha: true, willReadFrequently: false })
+        ctx.clearRect(0, 0, canvas.width, canvas.height)
+        
+        // Frame skipping for performance optimization
+        frameCountRef.current++
+        const shouldProcess = frameCountRef.current % INFERENCE_CONFIG.frameSkip === 0
+        
+        if (shouldProcess && detectorRef.current && !isProcessingRef.current) {
+          isProcessingRef.current = true
+          
+          try {
+            // Run inference asynchronously
+            const predictions = await detectorRef.current.estimatePoses?.(video) || 
+                                await detectorRef.current.estimateHands?.(video) || []
+            
+            if (predictions && predictions.length > 0) {
+              setDetections(predictions)
+              drawDetections(ctx, predictions, canvas.width, canvas.height)
+            }
+          } catch (error) {
+            console.error('Detection error:', error)
+          } finally {
+            isProcessingRef.current = false
+          }
+        } else if (detections) {
+          // Reuse previous detections for skipped frames
+          drawDetections(ctx, detections, canvas.width, canvas.height)
+        }
       }
       
       animationFrameRef.current = requestAnimationFrame(detectFrame)
@@ -80,34 +179,73 @@ export const useARDetection = (videoRef, canvasRef, category, productImage) => {
     detectFrame()
   }
 
-  const drawShoes = (ctx, centerX, canvasHeight, canvasWidth) => {
-    // Left shoe
+  const drawDetections = (ctx, predictions, width, height) => {
+    ctx.save()
+    
+    const centerX = width / 2
+    const centerY = height / 2
+    
+    // Draw based on category and actual detections
+    switch (category) {
+      case 'shoes':
+        drawShoesWithPose(ctx, predictions, centerX, height, width)
+        break
+      case 'watches':
+        drawWatchWithHand(ctx, predictions, centerX, centerY)
+        break
+      case 'bags':
+        drawBagWithHand(ctx, predictions, centerX, centerY)
+        break
+      case 'clothes':
+        drawClothesWithPose(ctx, predictions, centerX, centerY, width)
+        break
+    }
+    
+    ctx.restore()
+  }
+
+  const drawShoesWithPose = (ctx, poses, centerX, canvasHeight, canvasWidth) => {
+    let leftAnkle = null
+    let rightAnkle = null
+    
+    // Extract ankle positions from pose detection
+    if (poses && poses.length > 0 && poses[0].keypoints) {
+      const keypoints = poses[0].keypoints
+      leftAnkle = keypoints.find(kp => kp.name === 'left_ankle' && kp.score > INFERENCE_CONFIG.minConfidence)
+      rightAnkle = keypoints.find(kp => kp.name === 'right_ankle' && kp.score > INFERENCE_CONFIG.minConfidence)
+    }
+    
+    const shoeWidth = 120
+    const shoeHeight = 140
+    
+    // Use detected positions or fallback to center
+    const leftX = leftAnkle ? leftAnkle.x : centerX - 80
+    const leftY = leftAnkle ? leftAnkle.y + 40 : canvasHeight - 140
+    const rightX = rightAnkle ? rightAnkle.x : centerX + 80
+    const rightY = rightAnkle ? rightAnkle.y + 40 : canvasHeight - 140
+    
     ctx.globalAlpha = 0.85
     ctx.fillStyle = '#1e40af'
     ctx.strokeStyle = '#60a5fa'
     ctx.lineWidth = 4
     
-    const shoeWidth = 120
-    const shoeHeight = 140
-    const shoeY = canvasHeight - 180
-    
     // Left shoe
     ctx.beginPath()
-    ctx.ellipse(centerX - 80, shoeY + shoeHeight - 40, shoeWidth/2, shoeHeight/3, 0, 0, 2 * Math.PI)
+    ctx.ellipse(leftX, leftY, shoeWidth/2, shoeHeight/3, 0, 0, 2 * Math.PI)
     ctx.fill()
     ctx.stroke()
     
     // Right shoe
     ctx.beginPath()
-    ctx.ellipse(centerX + 80, shoeY + shoeHeight - 40, shoeWidth/2, shoeHeight/3, 0, 0, 2 * Math.PI)
+    ctx.ellipse(rightX, rightY, shoeWidth/2, shoeHeight/3, 0, 0, 2 * Math.PI)
     ctx.fill()
     ctx.stroke()
     
     // Add product image if available
     if (productImgRef.current) {
       ctx.globalAlpha = 0.9
-      ctx.drawImage(productImgRef.current, centerX - 140, shoeY, 100, 100)
-      ctx.drawImage(productImgRef.current, centerX + 40, shoeY, 100, 100)
+      ctx.drawImage(productImgRef.current, leftX - 50, leftY - 50, 100, 100)
+      ctx.drawImage(productImgRef.current, rightX - 50, rightY - 50, 100, 100)
     }
     
     // Add label
@@ -115,12 +253,21 @@ export const useARDetection = (videoRef, canvasRef, category, productImage) => {
     ctx.fillStyle = '#fff'
     ctx.font = 'bold 16px Arial'
     ctx.textAlign = 'center'
-    ctx.fillText('👟 Shoes Try-On', centerX, shoeY - 20)
+    ctx.fillText('👟 Shoes Try-On', centerX, Math.min(leftY, rightY) - 80)
   }
 
-  const drawWatch = (ctx, centerX, centerY) => {
-    const wristX = centerX - 180
-    const wristY = centerY + 120
+  const drawWatchWithHand = (ctx, hands, centerX, centerY) => {
+    let wristX = centerX - 180
+    let wristY = centerY + 120
+    
+    // Use detected wrist position if available
+    if (hands && hands.length > 0 && hands[0].keypoints) {
+      const wrist = hands[0].keypoints.find(kp => kp.name === 'wrist')
+      if (wrist && wrist.score > INFERENCE_CONFIG.minConfidence) {
+        wristX = wrist.x
+        wristY = wrist.y
+      }
+    }
     
     // Watch face
     ctx.globalAlpha = 0.9
@@ -157,9 +304,19 @@ export const useARDetection = (videoRef, canvasRef, category, productImage) => {
     ctx.fillText('⌚ Watch Try-On', wristX, wristY - 80)
   }
 
-  const drawBag = (ctx, centerX, centerY) => {
-    const bagX = centerX + 80
-    const bagY = centerY - 120
+  const drawBagWithHand = (ctx, hands, centerX, centerY) => {
+    let bagX = centerX + 80
+    let bagY = centerY - 120
+    
+    // Use detected hand position (shoulder area simulation)
+    if (hands && hands.length > 0 && hands[0].keypoints) {
+      const wrist = hands[0].keypoints.find(kp => kp.name === 'wrist')
+      if (wrist && wrist.score > INFERENCE_CONFIG.minConfidence) {
+        bagX = wrist.x + 100
+        bagY = wrist.y - 150
+      }
+    }
+    
     const bagWidth = 140
     const bagHeight = 160
     
@@ -191,11 +348,37 @@ export const useARDetection = (videoRef, canvasRef, category, productImage) => {
     ctx.fillText('👜 Bag Try-On', bagX + bagWidth/2, bagY - 80)
   }
 
-  const drawClothes = (ctx, centerX, centerY, canvasWidth) => {
+  const drawClothesWithPose = (ctx, poses, centerX, centerY, canvasWidth) => {
+    let shoulderLeft = null
+    let shoulderRight = null
+    let hip = null
+    
+    // Extract body keypoints from pose detection
+    if (poses && poses.length > 0 && poses[0].keypoints) {
+      const keypoints = poses[0].keypoints
+      shoulderLeft = keypoints.find(kp => kp.name === 'left_shoulder' && kp.score > INFERENCE_CONFIG.minConfidence)
+      shoulderRight = keypoints.find(kp => kp.name === 'right_shoulder' && kp.score > INFERENCE_CONFIG.minConfidence)
+      hip = keypoints.find(kp => (kp.name === 'left_hip' || kp.name === 'right_hip') && kp.score > INFERENCE_CONFIG.minConfidence)
+    }
+    
     const clothesWidth = 280
-    const clothesHeight = 240
-    const clothesX = centerX - clothesWidth/2
-    const clothesY = centerY - 100
+    let clothesHeight = 240
+    
+    // Calculate position based on detected pose or use defaults
+    let clothesX = centerX - clothesWidth/2
+    let clothesY = centerY - 100
+    
+    if (shoulderLeft && shoulderRight) {
+      clothesX = (shoulderLeft.x + shoulderRight.x) / 2 - clothesWidth/2
+      clothesY = Math.min(shoulderLeft.y, shoulderRight.y)
+      
+      if (hip) {
+        const detectedHeight = hip.y - clothesY
+        if (detectedHeight > 50 && detectedHeight < 500) {
+          clothesHeight = detectedHeight
+        }
+      }
+    }
     
     // T-shirt shape
     ctx.globalAlpha = 0.75
@@ -214,7 +397,7 @@ export const useARDetection = (videoRef, canvasRef, category, productImage) => {
     // Add product image if available
     if (productImgRef.current) {
       ctx.globalAlpha = 0.85
-      ctx.drawImage(productImgRef.current, clothesX + 40, clothesY + 40, clothesWidth - 80, clothesHeight - 80)
+      ctx.drawImage(productImgRef.current, clothesX + 40, clothesY + 40, clothesWidth - 80, Math.min(clothesHeight - 80, 160))
     }
     
     // Add label
@@ -222,12 +405,32 @@ export const useARDetection = (videoRef, canvasRef, category, productImage) => {
     ctx.fillStyle = '#fff'
     ctx.font = 'bold 16px Arial'
     ctx.textAlign = 'center'
-    ctx.fillText('👕 Clothes Try-On', centerX, clothesY - 20)
+    ctx.fillText('👕 Clothes Try-On', clothesX + clothesWidth/2, clothesY - 20)
   }
 
   const stopDetection = () => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = null
+    }
+    
+    // Clean up processing state
+    isProcessingRef.current = false
+    frameCountRef.current = 0
+    
+    // Dispose of tensors to free memory
+    if (detectorRef.current) {
+      try {
+        // Note: Don't dispose cached models, just clear reference
+        detectorRef.current = null
+      } catch (error) {
+        console.error('Error during cleanup:', error)
+      }
+    }
+    
+    // Log memory usage for debugging
+    if (tf.memory) {
+      console.log('TensorFlow memory after cleanup:', tf.memory())
     }
   }
 
