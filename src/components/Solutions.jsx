@@ -175,7 +175,10 @@ const Solutions = () => {
 
                 {/* Footer */}
                 <div className="px-6 pb-6">
-                  <button className="w-full btn-secondary flex items-center justify-center space-x-2">
+                  <a 
+                    href="#contact"
+                    className="w-full btn-secondary flex items-center justify-center space-x-2"
+                  >
                     <span>Learn More</span>
                     <motion.div
                       animate={{ x: [0, 5, 0] }}
@@ -183,7 +186,7 @@ const Solutions = () => {
                     >
                       →
                     </motion.div>
-                  </button>
+                  </a>
                 </div>
               </motion.div>
             )

@@ -1,17 +1,30 @@
 import { motion } from 'framer-motion'
 
 const BrandShowcase = () => {
-  // Placeholder brand logos - replace with actual client logos
+  // Brand logos - using inline SVG to avoid external requests
   const brands = [
-    { name: 'Nike', logo: 'https://logo.clearbit.com/nike.com' },
-    { name: 'Adidas', logo: 'https://logo.clearbit.com/adidas.com' },
-    { name: 'Gucci', logo: 'https://logo.clearbit.com/gucci.com' },
-    { name: 'Prada', logo: 'https://logo.clearbit.com/prada.com' },
-    { name: 'Burberry', logo: 'https://logo.clearbit.com/burberry.com' },
-    { name: 'Zara', logo: 'https://logo.clearbit.com/zara.com' },
-    { name: 'H&M', logo: 'https://logo.clearbit.com/hm.com' },
-    { name: 'Uniqlo', logo: 'https://logo.clearbit.com/uniqlo.com' }
+    { name: 'Nike' },
+    { name: 'Adidas' },
+    { name: 'Gucci' },
+    { name: 'Prada' },
+    { name: 'Burberry' },
+    { name: 'Zara' },
+    { name: 'H&M' },
+    { name: 'Uniqlo' }
   ]
+
+  // Generate inline SVG logo
+  const generateLogo = (name) => {
+    return `data:image/svg+xml,${encodeURIComponent(`
+      <svg width="150" height="50" xmlns="http://www.w3.org/2000/svg">
+        <rect width="150" height="50" fill="#0ea5e9" rx="8"/>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" 
+              font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+          ${name}
+        </text>
+      </svg>
+    `)}`
+  }
 
   const testimonials = [
     {
@@ -68,12 +81,9 @@ const BrandShowcase = () => {
                 className="flex items-center justify-center p-6 bg-slate-50 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300 group"
               >
                 <img 
-                  src={brand.logo} 
+                  src={generateLogo(brand.name)} 
                   alt={brand.name}
                   className="h-12 w-auto grayscale group-hover:grayscale-0 transition-all duration-300 opacity-60 group-hover:opacity-100"
-                  onError={(e) => {
-                    e.target.src = `https://via.placeholder.com/150x50/0ea5e9/ffffff?text=${brand.name}`
-                  }}
                 />
               </motion.div>
             ))}

@@ -58,20 +58,37 @@ const Header = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden mt-4 pb-4 space-y-4 animate-fade-in">
-            <a href="#home" className="block text-slate-700 hover:text-sky-600 transition-colors font-medium">
+            <a 
+              href="#home" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+            >
               Home
             </a>
-            <a href="#solutions" className="block text-slate-700 hover:text-sky-600 transition-colors font-medium">
+            <a 
+              href="#solutions" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+            >
               Solutions
             </a>
-            <a href="#catalog" className="block text-slate-700 hover:text-sky-600 transition-colors font-medium">
+            <a 
+              href="#catalog" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+            >
               Categories
             </a>
-            <a href="#contact" className="block text-slate-700 hover:text-sky-600 transition-colors font-medium">
+            <a 
+              href="#contact" 
+              onClick={() => setIsMenuOpen(false)}
+              className="block text-slate-700 hover:text-sky-600 transition-colors font-medium"
+            >
               Contact
             </a>
             <a 
               href="#contact"
+              onClick={() => setIsMenuOpen(false)}
               className="w-full flex items-center justify-center space-x-2 btn-primary"
             >
               <span>Request Demo</span>

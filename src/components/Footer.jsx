@@ -22,8 +22,8 @@ const Footer = () => {
             <ul className="space-y-2">
               <li><a href="#home" className="hover:text-primary-400 transition-colors">Home</a></li>
               <li><a href="#catalog" className="hover:text-primary-400 transition-colors">Products</a></li>
-              <li><a href="#features" className="hover:text-primary-400 transition-colors">Features</a></li>
-              <li><a href="#how-it-works" className="hover:text-primary-400 transition-colors">How It Works</a></li>
+              <li><a href="#solutions" className="hover:text-primary-400 transition-colors">Solutions</a></li>
+              <li><a href="#contact" className="hover:text-primary-400 transition-colors">Contact</a></li>
             </ul>
           </div>
 
@@ -31,10 +31,10 @@ const Footer = () => {
           <div>
             <h4 className="text-white font-bold mb-4">Categories</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Shoes</a></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Bags</a></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Clothes</a></li>
-              <li><a href="#" className="hover:text-primary-400 transition-colors">Watches</a></li>
+              <li><a href="#catalog" className="hover:text-primary-400 transition-colors">Shoes</a></li>
+              <li><a href="#catalog" className="hover:text-primary-400 transition-colors">Bags</a></li>
+              <li><a href="#catalog" className="hover:text-primary-400 transition-colors">Clothes</a></li>
+              <li><a href="#catalog" className="hover:text-primary-400 transition-colors">Watches</a></li>
             </ul>
           </div>
 

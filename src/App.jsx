@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import HeroB2B from './components/HeroB2B'
 import CategoryShowcase from './components/CategoryShowcase'
@@ -11,10 +11,20 @@ import BrandShowcase from './components/BrandShowcase'
 import ContactForm from './components/ContactForm'
 import ARTryOn from './components/ARTryOn'
 import Footer from './components/Footer'
+import VideoModal from './components/VideoModal'
 
 function App() {
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [showAR, setShowAR] = useState(false)
+  const [showVideoModal, setShowVideoModal] = useState(false)
+
+  // Smooth scroll behavior
+  useEffect(() => {
+    document.documentElement.style.scrollBehavior = 'smooth'
+    return () => {
+      document.documentElement.style.scrollBehavior = 'auto'
+    }
+  }, [])
 
   const handleTryOn = (product) => {
     setSelectedProduct(product)
@@ -26,6 +36,14 @@ function App() {
     setSelectedProduct(null)
   }
 
+  const handleOpenVideo = () => {
+    setShowVideoModal(true)
+  }
+
+  const handleCloseVideo = () => {
+    setShowVideoModal(false)
+  }
+
   return (
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="min-h-screen bg-primary-100">
@@ -34,7 +52,7 @@ function App() {
         <Routes>
           <Route path="/" element={
             <>
-              <HeroB2B />
+              <HeroB2B onOpenVideo={handleOpenVideo} />
               <CategoryShowcase />
               <Solutions />
               <ProcessSteps />
@@ -59,6 +77,12 @@ function App() {
             />
           </div>
         )}
+
+        {/* Video Modal */}
+        <VideoModal 
+          isOpen={showVideoModal} 
+          onClose={handleCloseVideo}
+        />
       </div>
     </Router>
   )

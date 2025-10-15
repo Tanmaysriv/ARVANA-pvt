@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, Play, Sparkles } from 'lucide-react'
 
-const HeroB2B = () => {
+const HeroB2B = ({ onOpenVideo }) => {
   const categories = [
     { 
       name: 'Footwear', 
@@ -83,7 +83,10 @@ const HeroB2B = () => {
                 <span>Request a Demo</span>
                 <ArrowRight className="w-5 h-5" />
               </a>
-              <button className="btn-secondary flex items-center space-x-2 text-lg px-8 py-4">
+              <button 
+                onClick={onOpenVideo}
+                className="btn-secondary flex items-center space-x-2 text-lg px-8 py-4"
+              >
                 <Play className="w-5 h-5" />
                 <span>Watch Video</span>
               </button>

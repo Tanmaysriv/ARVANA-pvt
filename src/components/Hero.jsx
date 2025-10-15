@@ -70,47 +70,151 @@ const Hero = ({ onStartTryOn }) => {
             </div>
           </motion.div>
 
-          {/* Right Content - Hero Image/Animation */}
+          {/* Right Content - iPhone 15 Pro Mockup */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
+            className="relative flex justify-center items-center"
           >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <div className="aspect-square bg-gradient-to-br from-primary-400 via-purple-400 to-pink-400 flex items-center justify-center">
-                <div className="text-center text-white p-8">
-                  <Camera className="w-32 h-32 mx-auto mb-4 animate-pulse-slow" />
-                  <p className="text-2xl font-semibold">AR Experience</p>
-                  <p className="text-lg opacity-90">Point your camera to try on</p>
+            {/* iPhone 15 Pro Frame */}
+            <div className="relative">
+              {/* Phone Body */}
+              <div className="relative w-[340px] h-[690px] bg-gradient-to-b from-slate-800 to-slate-900 rounded-[55px] p-3 shadow-2xl ring-1 ring-slate-700">
+                {/* Dynamic Island */}
+                <div className="absolute top-6 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-black rounded-full z-10"></div>
+                
+                {/* Screen */}
+                <div className="relative w-full h-full bg-white rounded-[45px] overflow-hidden">
+                  {/* Status Bar */}
+                  <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-b from-slate-900/10 to-transparent z-10 flex items-center justify-between px-8 pt-2">
+                    <span className="text-xs font-semibold text-slate-900">9:41</span>
+                    <div className="flex items-center space-x-1">
+                      <div className="w-4 h-3 border border-slate-900 rounded-sm relative">
+                        <div className="absolute inset-0.5 bg-slate-900 rounded-[1px]"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* App Content - ARVANA Trial */}
+                  <div className="h-full bg-gradient-to-br from-sky-50 to-purple-50 overflow-hidden">
+                    {/* Mini Header */}
+                    <div className="pt-14 px-6 pb-4 bg-white/80 backdrop-blur-sm">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold bg-gradient-to-r from-sky-600 to-purple-600 bg-clip-text text-transparent">ARVANA</h2>
+                        <div className="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center">
+                          <Camera className="w-4 h-4 text-sky-600" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* AR Try-On Preview */}
+                    <div className="px-6 py-4 space-y-4">
+                      {/* Main AR View */}
+                      <motion.div 
+                        animate={{ scale: [1, 1.02, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="relative h-[280px] bg-gradient-to-br from-sky-400 via-purple-400 to-pink-400 rounded-3xl overflow-hidden shadow-lg"
+                      >
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center text-white">
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                            >
+                              <Camera className="w-20 h-20 mx-auto mb-3 opacity-90" />
+                            </motion.div>
+                            <p className="text-sm font-semibold">AR View Active</p>
+                          </div>
+                        </div>
+                        
+                        {/* AR Overlay Elements */}
+                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-semibold text-sky-600">
+                          Live Preview
+                        </div>
+                        <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1.5 text-xs font-semibold text-purple-600">
+                          98% Match
+                        </div>
+                      </motion.div>
+
+                      {/* Product Cards */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <motion.div 
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity }}
+                          className="bg-white rounded-2xl p-3 shadow-md"
+                        >
+                          <div className="w-full h-16 bg-gradient-to-br from-sky-200 to-sky-300 rounded-xl mb-2 flex items-center justify-center text-2xl">
+                            👟
+                          </div>
+                          <p className="text-[10px] font-semibold text-slate-700 text-center">Sneakers</p>
+                        </motion.div>
+                        
+                        <motion.div 
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, delay: 0.2 }}
+                          className="bg-white rounded-2xl p-3 shadow-md"
+                        >
+                          <div className="w-full h-16 bg-gradient-to-br from-purple-200 to-purple-300 rounded-xl mb-2 flex items-center justify-center text-2xl">
+                            👜
+                          </div>
+                          <p className="text-[10px] font-semibold text-slate-700 text-center">Bags</p>
+                        </motion.div>
+                        
+                        <motion.div 
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, delay: 0.4 }}
+                          className="bg-white rounded-2xl p-3 shadow-md"
+                        >
+                          <div className="w-full h-16 bg-gradient-to-br from-pink-200 to-pink-300 rounded-xl mb-2 flex items-center justify-center text-2xl">
+                            ⌚
+                          </div>
+                          <p className="text-[10px] font-semibold text-slate-700 text-center">Watches</p>
+                        </motion.div>
+                      </div>
+
+                      {/* CTA Button */}
+                      <motion.button
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="w-full bg-gradient-to-r from-sky-600 to-purple-600 text-white rounded-2xl py-3 font-semibold text-sm shadow-lg"
+                      >
+                        Start AR Try-On
+                      </motion.button>
+                    </div>
+                  </div>
                 </div>
               </div>
-              
-              {/* Floating Cards */}
+
+              {/* Floating Feature Cards */}
               <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute top-8 -right-4 bg-white rounded-lg shadow-xl p-4"
+                animate={{ y: [0, -15, 0], rotate: [0, 5, 0] }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="absolute -top-8 -right-12 bg-white rounded-2xl shadow-2xl p-4 w-48"
               >
-                <div className="flex items-center space-x-2">
-                  <div className="w-12 h-12 bg-primary-100 rounded-lg"></div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-sky-600 rounded-xl flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-white" />
+                  </div>
                   <div>
-                    <div className="text-xs text-gray-500">Shoes</div>
-                    <div className="font-semibold">Nike Air Max</div>
+                    <div className="text-xs text-slate-500">Accuracy</div>
+                    <div className="text-lg font-bold text-slate-900">98%</div>
                   </div>
                 </div>
               </motion.div>
 
               <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, delay: 0.5 }}
-                className="absolute bottom-8 -left-4 bg-white rounded-lg shadow-xl p-4"
+                animate={{ y: [0, 15, 0], rotate: [0, -5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}
+                className="absolute -bottom-8 -left-12 bg-white rounded-2xl shadow-2xl p-4 w-48"
               >
-                <div className="flex items-center space-x-2">
-                  <div className="w-12 h-12 bg-purple-100 rounded-lg"></div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center">
+                    <Zap className="w-6 h-6 text-white" />
+                  </div>
                   <div>
-                    <div className="text-xs text-gray-500">Watch</div>
-                    <div className="font-semibold">Smart Watch</div>
+                    <div className="text-xs text-slate-500">Users</div>
+                    <div className="text-lg font-bold text-slate-900">500K+</div>
                   </div>
                 </div>
               </motion.div>
