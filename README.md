@@ -1,337 +1,309 @@
-# ARVANA - AR Virtual Try-On Platform
+# ARVANA Backend API
 
-![ARVANA](https://img.shields.io/badge/ARVANA-AR%20Virtual%20Try--On-blue)
-![React](https://img.shields.io/badge/React-18.2.0-61dafb)
-![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-4.15.0-orange)
-![License](https://img.shields.io/badge/license-MIT-green)
+REST API server for the ARVANA AR Virtual Try-On e-commerce platform.
 
-A cutting-edge augmented reality virtual try-on platform that allows users to try shoes, bags, clothes, and watches using advanced AI and computer vision technology.
+## Tech Stack
 
-## 🌟 Features
+- **Runtime:** Node.js (v22+)
+- **Framework:** Express 4.18
+- **Storage:** In-memory (Maps & Arrays)
+- **Modules:** ES Modules (`"type": "module"`)
 
-### Core Functionality
-- **Real-Time AR Try-On**: Experience products in real-time using your device camera
-- **Multi-Category Support**: Try on shoes, bags, clothes, and watches
-- **AI-Powered Detection**: Advanced pose, hand, and face detection using TensorFlow.js
-- **Instant Capture**: Take photos of your virtual try-on experience
-- **Share & Download**: Save and share your try-on photos
+## Getting Started
 
-### Technical Features
-- **Pose Detection**: Full-body tracking for shoes and clothes
-- **Hand Tracking**: Precise wrist detection for watches and bags
-- **Face Mesh**: Facial landmark detection for accessories
-- **Privacy-First**: All processing happens locally on your device
-- **Mobile Optimized**: Works seamlessly on desktop and mobile devices
-- **Zero Lag**: Real-time rendering with optimized performance
-
-### UI/UX Features
-- **Modern Design**: Beautiful, responsive interface built with TailwindCSS
-- **Smooth Animations**: Framer Motion powered transitions
-- **Category Filters**: Easy product browsing by category
-- **Product Catalog**: Extensive collection with detailed information
-- **Interactive Controls**: Zoom, capture, and share controls
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-- Modern web browser with camera access
-- Good lighting for optimal AR experience
-
-### Installation
-
-1. **Clone or navigate to the project directory**
-   ```bash
-   cd d:\ARVANA
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open your browser**
-   Navigate to `http://localhost:3000`
-
-5. **Grant camera permissions**
-   Allow camera access when prompted for AR functionality
-
-## 📱 Usage
-
-### Trying On Products
-
-1. **Browse Products**: Scroll through the product catalog on the homepage
-2. **Select Category**: Filter by shoes, bags, clothes, or watches
-3. **Click Try-On**: Click the camera icon on any product
-4. **Position Yourself**: Follow the on-screen instructions for optimal detection
-5. **Capture Photo**: Take a snapshot when you're happy with the result
-6. **Share or Download**: Save your try-on photo or share it with friends
-
-### Category-Specific Instructions
-
-#### 👟 Shoes
-- Stand in a well-lit area
-- Point camera at your feet
-- Stand still for best results
-- The AR overlay will appear on your ankles/feet
-
-#### 👜 Bags
-- Show your hand or shoulder to the camera
-- Keep your hand steady
-- The bag will overlay on your hand/shoulder area
-
-#### 👕 Clothes
-- Position yourself showing upper body
-- Stand in good lighting
-- Keep torso visible in frame
-- The clothing will overlay on your body
-
-#### ⌚ Watches
-- Show your wrist to the camera
-- Keep your hand steady
-- The watch will appear on your wrist
-
-## 🛠️ Technology Stack
-
-### Frontend
-- **React 18.2**: Modern UI framework
-- **Vite**: Lightning-fast build tool
-- **React Router**: Client-side routing
-- **TailwindCSS**: Utility-first CSS framework
-- **Framer Motion**: Animation library
-- **Lucide React**: Beautiful icon set
-
-### AI & Computer Vision
-- **TensorFlow.js**: Machine learning in the browser
-- **Pose Detection**: MoveNet model for body tracking
-- **Hand Pose Detection**: MediaPipe Hands for wrist tracking
-- **Face Landmarks**: MediaPipe Face Mesh for facial tracking
-
-### 3D & AR
-- **Three.js**: 3D graphics library
-- **React Three Fiber**: React renderer for Three.js
-- **@react-three/drei**: Useful helpers for R3F
-
-## 📂 Project Structure
-
-```
-ARVANA/
-├── public/              # Static assets
-├── src/
-│   ├── components/      # React components
-│   │   ├── Header.jsx
-│   │   ├── Hero.jsx
-│   │   ├── Features.jsx
-│   │   ├── ProductCatalog.jsx
-│   │   ├── ARTryOn.jsx
-│   │   └── Footer.jsx
-│   ├── hooks/          # Custom React hooks
-│   │   └── useARDetection.js
-│   ├── data/           # Product data
-│   │   └── products.js
-│   ├── App.jsx         # Main app component
-│   ├── main.jsx        # Entry point
-│   └── index.css       # Global styles
-├── index.html
-├── package.json
-├── vite.config.js
-├── tailwind.config.js
-└── README.md
-```
-
-## 🎨 Customization
-
-### Adding New Products
-
-Edit `src/data/products.js`:
-
-```javascript
-{
-  id: 13,
-  name: 'Your Product Name',
-  category: 'shoes', // or 'bags', 'clothes', 'watches'
-  price: 99,
-  image: 'https://your-image-url.com/image.jpg',
-  description: 'Product description',
-  colors: ['Black', 'White'],
-  sizes: ['S', 'M', 'L']
-}
-```
-
-### Customizing AR Overlays
-
-Modify the overlay functions in `src/hooks/useARDetection.js`:
-- `drawShoeOverlay()` - Customize shoe appearance
-- `drawClothesOverlay()` - Customize clothing appearance
-- `drawWatchOverlay()` - Customize watch appearance
-- `drawBagOverlay()` - Customize bag appearance
-
-### Styling
-
-All styles are in:
-- `src/index.css` - Global styles and Tailwind directives
-- `tailwind.config.js` - Tailwind configuration
-- Component files - Component-specific styles
-
-## 🔧 Configuration
-
-### Camera Settings
-
-Adjust camera quality in `src/components/ARTryOn.jsx`:
-
-```javascript
-const stream = await navigator.mediaDevices.getUserMedia({
-  video: {
-    width: { ideal: 1280 },  // Adjust resolution
-    height: { ideal: 720 },
-    facingMode: 'user'       // 'user' or 'environment'
-  }
-})
-```
-
-### AI Model Settings
-
-Configure detection models in `src/hooks/useARDetection.js`:
-
-```javascript
-// Pose detection sensitivity
-detectorRef.current = await poseDetection.createDetector(
-  poseDetection.SupportedModels.MoveNet,
-  {
-    modelType: poseDetection.movenet.modelType.SINGLEPOSE_LIGHTNING
-    // Options: SINGLEPOSE_LIGHTNING, SINGLEPOSE_THUNDER
-  }
-)
-```
-
-## 📊 Performance Optimization
-
-### Tips for Best Performance
-
-1. **Use good lighting** - Improves detection accuracy
-2. **Stable camera position** - Reduces jitter
-3. **Clear background** - Helps with detection
-4. **Modern device** - Better processing power
-5. **Close other tabs** - Free up resources
-
-### Model Selection
-
-- **Lightning models**: Faster, less accurate (mobile)
-- **Thunder models**: Slower, more accurate (desktop)
-
-## 🔒 Privacy & Security
-
-- **Local Processing**: All AI processing happens on your device
-- **No Data Storage**: Images are never uploaded to servers
-- **Camera Permissions**: Only used when explicitly granted
-- **Secure Connection**: Use HTTPS in production
-
-## 🚀 Deployment
-
-### Build for Production
+### 1. Install Dependencies
 
 ```bash
-npm run build
-```
-
-This creates an optimized build in the `dist/` folder.
-
-### Deploy to Vercel
-
-```bash
-npm install -g vercel
-vercel
-```
-
-### Deploy to Netlify
-
-```bash
-npm install -g netlify-cli
-netlify deploy --prod
-```
-
-### Environment Variables
-
-For production, set:
-- `VITE_API_URL` - Backend API URL (if applicable)
-- `VITE_ANALYTICS_ID` - Analytics tracking ID
-
-## 🐛 Troubleshooting
-
-### Camera Not Working
-- Check browser permissions
-- Ensure HTTPS connection (required for camera access)
-- Try different browser
-- Check if camera is being used by another app
-
-### AR Detection Not Working
-- Ensure good lighting
-- Check if you're in frame
-- Wait for model to load (check "Ready" indicator)
-- Try refreshing the page
-
-### Performance Issues
-- Close other browser tabs
-- Use a more powerful device
-- Reduce camera resolution in settings
-- Switch to Lightning model
-
-### Build Errors
-```bash
-# Clear cache and reinstall
-rm -rf node_modules package-lock.json
+cd backend
 npm install
 ```
 
-## 🤝 Contributing
+### 2. Configure Environment
 
-Contributions are welcome! Please follow these steps:
+Create a `.env` file (or use the existing one):
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```env
+PORT=5000
+NODE_ENV=development
+```
 
-## 📝 License
+### 3. Start the Server
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+```bash
+# Production
+npm start
 
-## 🙏 Acknowledgments
+# Development (auto-restart on file changes)
+npm run dev
+```
 
-- **TensorFlow.js Team** - For amazing ML models
-- **MediaPipe** - For pose and hand tracking
-- **React Team** - For the excellent framework
-- **Tailwind CSS** - For the utility-first CSS framework
-- **Wanna Fashion** - For inspiration
-
-## 📧 Contact
-
-For questions or support:
-- Email: support@arvana.com
-- Website: https://arvana.com
-- Twitter: @arvana_ar
-
-## 🗺️ Roadmap
-
-- [ ] Add more product categories (jewelry, hats, glasses)
-- [ ] Implement size recommendation AI
-- [ ] Add social sharing features
-- [ ] Multi-language support
-- [ ] Virtual fitting room with multiple products
-- [ ] AR filters and effects
-- [ ] Integration with e-commerce platforms
-- [ ] Mobile app (iOS/Android)
+The server will start at **http://localhost:5000**
 
 ---
 
-**Made with ❤️ by the ARVANA Team**
+## Project Structure
 
-*Try before you buy with AR magic!* ✨
+```
+backend/
+├── .env                 # Environment variables
+├── package.json         # Dependencies & scripts
+├── server.js            # Express app entry point
+├── data/
+│   ├── products.js      # Seed data: 12 products + 5 categories
+│   └── reviews.js       # Seed data: 5 reviews
+└── routes/
+    ├── products.js      # Product listing & details
+    ├── categories.js    # Category listing
+    ├── cart.js           # Cart CRUD operations
+    ├── wishlist.js       # Wishlist CRUD operations
+    ├── orders.js         # Order placement & history
+    ├── newsletter.js     # Email subscription
+    └── reviews.js        # Product reviews
+```
+
+---
+
+## API Reference
+
+Base URL: `http://localhost:5000/api`
+
+### Health Check
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/health` | Server status & timestamp |
+
+---
+
+### Products
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products` | List all products |
+| GET | `/api/products/:id` | Get a single product |
+
+**Query Parameters** for `GET /api/products`:
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `category` | string | Filter by category (`shoes`, `bags`, `clothes`, `watches`) |
+| `search` | string | Search by name, brand, or description |
+| `sort` | string | Sort order: `price-low`, `price-high`, `rating`, `discount` |
+| `minPrice` | number | Minimum price filter |
+| `maxPrice` | number | Maximum price filter |
+
+**Example:**
+```
+GET /api/products?category=shoes&sort=price-low&minPrice=50&maxPrice=200
+```
+
+---
+
+### Categories
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/categories` | List all categories |
+
+---
+
+### Cart
+
+All cart endpoints use `userId` to identify the user (defaults to `"guest"`).
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/cart?userId=xxx` | Get cart contents |
+| POST | `/api/cart` | Add item to cart |
+| PUT | `/api/cart/:itemId` | Update item quantity |
+| DELETE | `/api/cart/:itemId` | Remove item from cart |
+| DELETE | `/api/cart?userId=xxx` | Clear entire cart |
+
+**POST Body:**
+```json
+{
+  "productId": 1,
+  "quantity": 2,
+  "userId": "guest"
+}
+```
+
+---
+
+### Wishlist
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/wishlist?userId=xxx` | Get wishlist |
+| POST | `/api/wishlist` | Add item to wishlist |
+| DELETE | `/api/wishlist/:productId` | Remove from wishlist |
+
+**POST Body:**
+```json
+{
+  "productId": 1,
+  "userId": "guest"
+}
+```
+
+---
+
+### Orders
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/orders` | Place a new order |
+| GET | `/api/orders?userId=xxx` | Get order history |
+| GET | `/api/orders/:id` | Get single order by ID or order number |
+
+**POST Body:**
+```json
+{
+  "userId": "guest",
+  "items": [
+    { "productId": 1, "name": "Nike Air Max 270", "price": 129.99, "quantity": 1 }
+  ],
+  "shippingAddress": {
+    "street": "123 Main St",
+    "city": "New York",
+    "zip": "10001"
+  },
+  "paymentMethod": "card"
+}
+```
+
+> Free shipping on orders ≥ $50. Otherwise, $5.99 shipping fee.
+
+---
+
+### Newsletter
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/newsletter` | Subscribe to newsletter |
+| GET | `/api/newsletter/subscribers` | List all subscribers (admin) |
+
+**POST Body:**
+```json
+{
+  "email": "user@example.com"
+}
+```
+
+---
+
+### Reviews
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/reviews` | List all reviews |
+| GET | `/api/reviews?productId=1` | Reviews for a specific product |
+| POST | `/api/reviews` | Submit a new review |
+
+**POST Body:**
+```json
+{
+  "productId": 1,
+  "userName": "John D.",
+  "rating": 5,
+  "comment": "Great product!"
+}
+```
+
+---
+
+## Data Models
+
+### Product
+```
+id            number       Unique identifier
+name          string       Product name
+brand         string       Brand name
+category      string       "shoes" | "bags" | "clothes" | "watches"
+price         number       Current price
+originalPrice number       Price before discount
+rating        number       Average rating (1-5)
+reviewCount   number       Total number of reviews
+image         string       Image URL
+description   string       Product description
+colors        string[]     Available colors
+sizes         string[]     Available sizes
+badge         string|null  "Bestseller", "New", "Sale", "Trending", or null
+inStock       boolean      Availability status
+```
+
+### Cart Item
+```
+id            uuid         Cart item ID
+productId     number       Reference to product
+name          string       Product name
+brand         string       Brand name
+price         number       Unit price
+originalPrice number       Original price
+image         string       Image URL
+category      string       Product category
+quantity      number       Item quantity
+```
+
+### Order
+```
+id                uuid       Order ID
+orderNumber       string     "ARV-XXXXXXXX"
+userId            string     User identifier
+items             array      Ordered items
+subtotal          number     Items total
+shipping          number     Shipping cost (0 if subtotal ≥ 50)
+total             number     Final total
+shippingAddress   object     Delivery address
+paymentMethod     string     Payment method
+status            string     "confirmed"
+createdAt         ISO date   Order timestamp
+estimatedDelivery ISO date   Expected delivery (+3 days)
+```
+
+### Review
+```
+id            number       Unique identifier
+productId     number       Reference to product
+userName      string       Reviewer name
+rating        number       Rating (1-5)
+comment       string       Review text
+verified      boolean      Verified purchase flag
+date          string       "YYYY-MM-DD"
+avatar        string       Avatar image URL
+```
+
+---
+
+## Seed Data
+
+The server comes pre-loaded with:
+
+- **12 Products** — 3 shoes, 3 bags, 3 clothes, 3 watches
+- **5 Categories** — Footwear, Bags, Watches, Jewellery, Clothes
+- **5 Reviews** — Sample verified reviews
+
+---
+
+## Important Notes
+
+- **In-memory storage** — All data (cart, wishlist, orders, subscribers) resets when the server restarts.
+- **No authentication** — `userId` is passed as a parameter; there is no token-based auth.
+- **No database** — Ready to be upgraded to MongoDB, PostgreSQL, etc.
+- **CORS enabled** — Accepts requests from any origin.
+- **Frontend proxy** — The Vite dev server proxies `/api` requests to this backend on port 5000.
+
+---
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm start` | Start the server |
+| `npm run dev` | Start with auto-reload (`--watch`) |
+
+---
+
+## License
+
+MIT
