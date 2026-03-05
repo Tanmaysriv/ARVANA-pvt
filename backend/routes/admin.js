@@ -65,11 +65,12 @@ router.post('/upload', upload.single('image'), (req, res) => {
 
 router.get('/stats', async (req, res) => {
   try {
-    const [totalOrders, totalProducts, totalUsers, totalCategories, orders] = await Promise.all([
+    const [totalOrders, totalProducts, totalUsers, totalCategories, totalSellers, orders] = await Promise.all([
       Order.countDocuments(),
       Product.countDocuments(),
-      User.countDocuments(),
+      User.countDocuments({ role: 'customer' }),
       Category.countDocuments(),
+      User.countDocuments({ role: 'seller' }),
       Order.find().select('total status createdAt').lean(),
     ])
 
@@ -94,6 +95,7 @@ router.get('/stats', async (req, res) => {
         totalProducts,
         totalUsers,
         totalCategories,
+        totalSellers,
         totalRevenue: Math.round(totalRevenue),
         recentRevenue: Math.round(recentRevenue),
         statusCounts,
@@ -289,13 +291,77 @@ router.delete('/categories/:id', async (req, res) => {
 })
 
 // ──────────────────────────────────────────────
-// USERS (read-only for MVP)
+// USERS
 // ──────────────────────────────────────────────
 
 router.get('/users', async (req, res) => {
   try {
-    const users = await User.find().select('-password').sort({ createdAt: -1 }).lean()
+    const { role } = req.query
+    const filter = {}
+    if (role) filter.role = role
+    const users = await User.find(filter).select('-password').sort({ createdAt: -1 }).lean()
     res.json({ success: true, count: users.length, data: users })
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// ──────────────────────────────────────────────
+// SELLER MANAGEMENT
+// ──────────────────────────────────────────────
+
+// GET /api/admin/sellers — list all sellers
+router.get('/sellers', async (req, res) => {
+  try {
+    const { status } = req.query
+    const filter = { role: 'seller' }
+    if (status) filter.sellerStatus = status
+
+    const sellers = await User.find(filter)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .lean()
+
+    // Attach product count + revenue for each seller
+    const enriched = await Promise.all(sellers.map(async (seller) => {
+      const productCount = await Product.countDocuments({ seller: seller._id })
+      const orders = await Order.find({ sellers: seller._id }).select('items').lean()
+      let revenue = 0
+      for (const order of orders) {
+        for (const item of order.items) {
+          if (item.seller && item.seller.toString() === seller._id.toString()) {
+            revenue += item.price * item.quantity
+          }
+        }
+      }
+      return { ...seller, productCount, revenue: Math.round(revenue) }
+    }))
+
+    res.json({ success: true, count: enriched.length, data: enriched })
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// PATCH /api/admin/sellers/:id/status — approve or block a seller
+router.patch('/sellers/:id/status', async (req, res) => {
+  try {
+    const { sellerStatus } = req.body
+    if (!['approved', 'blocked', 'pending'].includes(sellerStatus)) {
+      return res.status(400).json({ success: false, error: 'Invalid status' })
+    }
+
+    const seller = await User.findOneAndUpdate(
+      { _id: req.params.id, role: 'seller' },
+      { sellerStatus },
+      { new: true }
+    ).select('-password')
+
+    if (!seller) {
+      return res.status(404).json({ success: false, error: 'Seller not found' })
+    }
+
+    res.json({ success: true, data: seller })
   } catch (error) {
     res.status(500).json({ success: false, error: error.message })
   }

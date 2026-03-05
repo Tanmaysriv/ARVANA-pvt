@@ -7,7 +7,7 @@ const router = Router()
 // ─── POST /api/auth/register ───
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body
+    const { name, email, password, phone, role, storeName, storeDescription, gstNumber } = req.body
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, error: 'Name, email and password are required' })
@@ -19,13 +19,32 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, error: 'An account with this email already exists' })
     }
 
-    const user = await User.create({
+    const userData = {
       name: name.trim(),
       email: email.toLowerCase().trim(),
       password,
       phone: phone || '',
-    })
+      role: 'customer', // default
+    }
 
+    // If registering as seller, add seller fields
+    if (role === 'seller') {
+      if (!storeName || !storeName.trim()) {
+        return res.status(400).json({ success: false, error: 'Store name is required for sellers' })
+      }
+      userData.role = 'seller'
+      userData.storeName = storeName.trim()
+      userData.storeDescription = (storeDescription || '').trim()
+      userData.gstNumber = (gstNumber || '').trim()
+      userData.sellerStatus = 'pending' // needs admin approval
+    }
+
+    // Prevent self-registration as admin
+    if (role === 'admin') {
+      return res.status(403).json({ success: false, error: 'Cannot register as admin' })
+    }
+
+    const user = await User.create(userData)
     const token = generateToken(user._id)
 
     res.status(201).json({

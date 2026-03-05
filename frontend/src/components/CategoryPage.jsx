@@ -90,7 +90,7 @@ const CategoryPage = ({ onTryOn }) => {
   const { products: allProducts, loading } = useProducts()
 
   const categoryProducts = useMemo(
-    () => allProducts.filter(p => p.category === slug),
+    () => allProducts.filter(p => p.category?.toLowerCase() === slug?.toLowerCase()),
     [allProducts, slug]
   )
 

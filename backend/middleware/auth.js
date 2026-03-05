@@ -47,11 +47,41 @@ export const protect = async (req, res, next) => {
 }
 
 /**
- * Middleware: Admin-only routes
+ * Factory: Restrict to specific roles
+ * Usage: authorize('admin'), authorize('admin', 'seller')
  */
-export const adminOnly = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
-    return next()
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ success: false, error: 'Not authenticated' })
+    }
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: `Access denied. Required role: ${roles.join(' or ')}`,
+      })
+    }
+    next()
   }
-  return res.status(403).json({ success: false, error: 'Admin access required' })
 }
+
+/**
+ * Middleware: Seller must be approved
+ */
+export const approvedSeller = (req, res, next) => {
+  if (req.user.role !== 'seller') {
+    return res.status(403).json({ success: false, error: 'Seller access required' })
+  }
+  if (req.user.sellerStatus !== 'approved') {
+    return res.status(403).json({
+      success: false,
+      error: req.user.sellerStatus === 'blocked'
+        ? 'Your seller account has been blocked. Contact support.'
+        : 'Your seller account is pending approval.',
+    })
+  }
+  next()
+}
+
+// Legacy alias for backward compatibility
+export const adminOnly = authorize('admin')

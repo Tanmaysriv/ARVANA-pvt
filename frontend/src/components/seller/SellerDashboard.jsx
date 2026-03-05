@@ -1,17 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ShoppingBag, Package, Users, IndianRupee, TrendingUp, FolderTree, Store } from 'lucide-react'
+import { IndianRupee, TrendingUp, Package, ShoppingBag, Layers, BarChart3 } from 'lucide-react'
 import api from '../../services/api'
 
 const statCards = [
   { key: 'totalRevenue', label: 'Total Revenue', icon: IndianRupee, color: 'emerald', prefix: '₹', format: true },
   { key: 'recentRevenue', label: 'Last 30 Days', icon: TrendingUp, color: 'sky', prefix: '₹', format: true },
   { key: 'totalOrders', label: 'Total Orders', icon: ShoppingBag, color: 'violet' },
-  { key: 'totalProducts', label: 'Products', icon: Package, color: 'amber' },
-  { key: 'totalUsers', label: 'Customers', icon: Users, color: 'rose' },
-  { key: 'totalSellers', label: 'Sellers', icon: Store, color: 'teal' },
-  { key: 'totalCategories', label: 'Categories', icon: FolderTree, color: 'cyan' },
+  { key: 'totalProducts', label: 'My Products', icon: Package, color: 'amber' },
+  { key: 'totalItemsSold', label: 'Items Sold', icon: Layers, color: 'rose' },
 ]
 
 const colorMap = {
@@ -20,8 +18,6 @@ const colorMap = {
   violet: 'bg-violet-50 dark:bg-violet-900/30 text-violet-600',
   amber: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600',
   rose: 'bg-rose-50 dark:bg-rose-900/30 text-rose-600',
-  teal: 'bg-teal-50 dark:bg-teal-900/30 text-teal-600',
-  cyan: 'bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600',
 }
 
 const statusColors = {
@@ -33,7 +29,7 @@ const statusColors = {
   cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 }
 
-const AdminDashboard = () => {
+const SellerDashboard = () => {
   const [stats, setStats] = useState(null)
   const [recentOrders, setRecentOrders] = useState([])
   const [loading, setLoading] = useState(true)
@@ -42,13 +38,13 @@ const AdminDashboard = () => {
     const load = async () => {
       try {
         const [statsRes, ordersRes] = await Promise.all([
-          api.admin.getStats(),
-          api.admin.getOrders({ limit: 5 }),
+          api.seller.getStats(),
+          api.seller.getOrders({ limit: 5 }),
         ])
         if (statsRes.success) setStats(statsRes.data)
         if (ordersRes.success) setRecentOrders(ordersRes.data)
       } catch (err) {
-        console.error('Failed to load dashboard:', err)
+        console.error('Failed to load seller dashboard:', err)
       } finally {
         setLoading(false)
       }
@@ -61,7 +57,7 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(5)].map((_, i) => (
             <div key={i} className="h-28 bg-white dark:bg-slate-900 rounded-2xl animate-pulse" />
           ))}
         </div>
@@ -72,8 +68,8 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Dashboard</h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Overview of your store</p>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Seller Dashboard</h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Overview of your store performance</p>
       </div>
 
       {/* Stats Grid */}
@@ -102,7 +98,9 @@ const AdminDashboard = () => {
       {/* Order Status Breakdown */}
       {stats?.statusCounts && Object.keys(stats.statusCounts).length > 0 && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-          <h2 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4">Orders by Status</h2>
+          <h2 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" /> Orders by Status
+          </h2>
           <div className="flex flex-wrap gap-3">
             {Object.entries(stats.statusCounts).map(([status, count]) => (
               <div key={status} className={`px-4 py-2 rounded-xl text-sm font-semibold ${statusColors[status] || 'bg-slate-100 text-slate-700'}`}>
@@ -117,11 +115,11 @@ const AdminDashboard = () => {
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-wider">Recent Orders</h2>
-          <Link to="/admin/orders" className="text-xs text-sky-600 hover:text-sky-700 font-semibold">View All →</Link>
+          <Link to="/seller/orders" className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold">View All →</Link>
         </div>
 
         {recentOrders.length === 0 ? (
-          <p className="text-sm text-slate-500 dark:text-slate-400 py-8 text-center">No orders yet</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 py-8 text-center">No orders yet. Products need to be purchased first.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -129,7 +127,7 @@ const AdminDashboard = () => {
                 <tr className="border-b border-slate-200 dark:border-slate-800">
                   <th className="text-left py-3 px-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Order</th>
                   <th className="text-left py-3 px-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Customer</th>
-                  <th className="text-left py-3 px-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Total</th>
+                  <th className="text-left py-3 px-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Items</th>
                   <th className="text-left py-3 px-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Status</th>
                   <th className="text-left py-3 px-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Date</th>
                 </tr>
@@ -138,12 +136,14 @@ const AdminDashboard = () => {
                 {recentOrders.map(order => (
                   <tr key={order._id} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td className="py-3 px-2">
-                      <Link to={`/admin/orders`} className="text-sky-600 hover:text-sky-700 font-semibold">
+                      <Link to="/seller/orders" className="text-emerald-600 hover:text-emerald-700 font-semibold">
                         {order.orderNumber}
                       </Link>
                     </td>
-                    <td className="py-3 px-2 text-slate-700 dark:text-slate-300">{order.user?.name || 'Unknown'}</td>
-                    <td className="py-3 px-2 font-semibold text-slate-800 dark:text-white">₹{order.total?.toLocaleString('en-IN')}</td>
+                    <td className="py-3 px-2 text-slate-700 dark:text-slate-300">{order.user?.name || 'Customer'}</td>
+                    <td className="py-3 px-2 text-slate-600 dark:text-slate-400">
+                      {order.items?.length || 0} item{(order.items?.length || 0) !== 1 ? 's' : ''}
+                    </td>
                     <td className="py-3 px-2">
                       <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${statusColors[order.status] || ''}`}>
                         {order.status?.charAt(0).toUpperCase() + order.status?.slice(1)}
@@ -163,4 +163,4 @@ const AdminDashboard = () => {
   )
 }
 
-export default AdminDashboard
+export default SellerDashboard

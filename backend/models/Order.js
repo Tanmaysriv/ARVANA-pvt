@@ -2,6 +2,7 @@ import mongoose from 'mongoose'
 
 const orderItemSchema = new mongoose.Schema({
   productId: { type: String, required: true },
+  seller: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   name: { type: String, required: true },
   brand: String,
   price: { type: Number, required: true },
@@ -39,6 +40,10 @@ const orderSchema = new mongoose.Schema({
     required: true,
     index: true,
   },
+  sellers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
   items: {
     type: [orderItemSchema],
     required: true,

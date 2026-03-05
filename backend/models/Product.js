@@ -6,6 +6,12 @@ const productSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  seller: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null, // null = platform/admin product (legacy)
+    index: true,
+  },
   name: {
     type: String,
     required: true,
@@ -19,7 +25,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['shoes', 'bags', 'clothes', 'watches']
+    trim: true
   },
   price: {
     type: Number,

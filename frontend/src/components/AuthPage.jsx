@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Eye, EyeOff, Mail, Lock, User, Phone, Sparkles, ArrowRight, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Phone, Sparkles, ArrowRight, AlertCircle, Store, FileText, Hash } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 const AuthPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, register, isAuthenticated, authError, clearError } = useAuth()
+  const { login, register, isAuthenticated, authError, clearError, user } = useAuth()
 
   // Determine initial tab from URL
   const isSignupRoute = location.pathname === '/signup'
@@ -15,6 +15,7 @@ const AuthPage = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [signupRole, setSignupRole] = useState('customer') // 'customer' | 'seller'
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('')
@@ -25,14 +26,24 @@ const AuthPage = () => {
   const [signupEmail, setSignupEmail] = useState('')
   const [signupPassword, setSignupPassword] = useState('')
   const [signupPhone, setSignupPhone] = useState('')
+  const [storeName, setStoreName] = useState('')
+  const [storeDescription, setStoreDescription] = useState('')
+  const [gstNumber, setGstNumber] = useState('')
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      const from = location.state?.from || '/'
-      navigate(from, { replace: true })
+      // Role-based redirect
+      if (user?.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else if (user?.role === 'seller') {
+        navigate('/seller', { replace: true })
+      } else {
+        const from = location.state?.from || '/'
+        navigate(from, { replace: true })
+      }
     }
-  }, [isAuthenticated, navigate, location.state])
+  }, [isAuthenticated, user, navigate, location.state])
 
   // Sync error from context
   useEffect(() => {
@@ -73,8 +84,15 @@ const AuthPage = () => {
       setError('Password must be at least 6 characters')
       return
     }
+    if (signupRole === 'seller' && !storeName.trim()) {
+      setError('Store name is required for seller accounts')
+      return
+    }
     setLoading(true)
-    const result = await register(signupName, signupEmail, signupPassword, signupPhone)
+    const opts = signupRole === 'seller'
+      ? { role: 'seller', storeName: storeName.trim(), storeDescription: storeDescription.trim(), gstNumber: gstNumber.trim() }
+      : {}
+    const result = await register(signupName, signupEmail, signupPassword, signupPhone, opts)
     setLoading(false)
     if (!result.success) {
       setError(result.error)
@@ -292,6 +310,100 @@ const AuthPage = () => {
                       />
                     </div>
                   </div>
+
+                  {/* Account Type Selector */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Account Type
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSignupRole('customer')}
+                        className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                          signupRole === 'customer'
+                            ? 'border-sky-500 bg-sky-50 dark:bg-sky-900/20 text-sky-700 dark:text-sky-400 ring-2 ring-sky-200 dark:ring-sky-800'
+                            : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-400'
+                        }`}
+                      >
+                        <User className="w-4 h-4" /> Customer
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSignupRole('seller')}
+                        className={`py-2.5 px-3 rounded-xl border text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                          signupRole === 'seller'
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 ring-2 ring-emerald-200 dark:ring-emerald-800'
+                            : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:border-slate-400'
+                        }`}
+                      >
+                        <Store className="w-4 h-4" /> Seller
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Seller Fields */}
+                  <AnimatePresence>
+                    {signupRole === 'seller' && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-4 overflow-hidden"
+                      >
+                        <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+                          <p className="text-xs text-emerald-700 dark:text-emerald-400">
+                            Seller accounts require admin approval before you can start selling.
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Store Name <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Store className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <input
+                              type="text"
+                              value={storeName}
+                              onChange={(e) => setStoreName(e.target.value)}
+                              placeholder="Your Store Name"
+                              className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            Store Description <span className="text-slate-400 text-xs">(optional)</span>
+                          </label>
+                          <div className="relative">
+                            <FileText className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                            <textarea
+                              value={storeDescription}
+                              onChange={(e) => setStoreDescription(e.target.value)}
+                              placeholder="Brief description of your store..."
+                              rows={2}
+                              className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-sm resize-none"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                            GST Number <span className="text-slate-400 text-xs">(optional)</span>
+                          </label>
+                          <div className="relative">
+                            <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <input
+                              type="text"
+                              value={gstNumber}
+                              onChange={(e) => setGstNumber(e.target.value)}
+                              placeholder="22AAAAA0000A1Z5"
+                              className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all text-sm"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Password */}
                   <div>

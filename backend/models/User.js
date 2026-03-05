@@ -34,8 +34,29 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
+    enum: ['customer', 'seller', 'admin'],
+    default: 'customer',
+  },
+  // ─── Seller-specific fields ───
+  storeName: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  storeDescription: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  gstNumber: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  sellerStatus: {
+    type: String,
+    enum: ['pending', 'approved', 'blocked'],
+    default: 'pending',
   },
   address: {
     street: { type: String, trim: true, default: '' },

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import Order from '../models/Order.js'
+import Product from '../models/Product.js'
 import { protect } from '../middleware/auth.js'
 
 const router = Router()
@@ -24,10 +25,27 @@ router.post('/', async (req, res) => {
     const shipping = subtotal >= 999 ? 0 : 99
     const total = Math.round(subtotal + shipping)
 
+    // Look up sellers for each item from the Product collection
+    const productIds = items.map(i => parseInt(i.productId)).filter(Boolean)
+    const products = await Product.find({ productId: { $in: productIds } }).select('productId seller').lean()
+    const sellerMap = {}
+    for (const p of products) {
+      if (p.seller) sellerMap[p.productId] = p.seller
+    }
+
+    // Attach seller to each item + collect unique sellers
+    const sellerSet = new Set()
+    const enrichedItems = items.map(item => {
+      const sid = sellerMap[parseInt(item.productId)] || null
+      if (sid) sellerSet.add(sid.toString())
+      return { ...item, seller: sid }
+    })
+
     const order = await Order.create({
       orderNumber: `ARV-${Date.now().toString().slice(-8)}`,
       user: req.user._id,
-      items,
+      sellers: [...sellerSet],
+      items: enrichedItems,
       subtotal: Math.round(subtotal),
       shipping,
       total,

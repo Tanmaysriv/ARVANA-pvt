@@ -9,9 +9,9 @@ router.get('/', async (req, res) => {
     const { category, sort, search, minPrice, maxPrice } = req.query
     let query = {}
 
-    // Filter by category
+    // Filter by category (case-insensitive)
     if (category && category !== 'all') {
-      query.category = category
+      query.category = { $regex: new RegExp(`^${category}$`, 'i') }
     }
 
     // Search by name, brand, description, or category

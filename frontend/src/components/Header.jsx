@@ -394,6 +394,16 @@ const Header = () => {
                         Admin Panel
                       </Link>
                     )}
+                    {user.role === 'seller' && (
+                      <Link
+                        to="/seller"
+                        onClick={() => setShowUserDropdown(false)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:text-emerald-600 transition-colors font-medium"
+                      >
+                        <Shield className="w-4 h-4" />
+                        Seller Dashboard
+                      </Link>
+                    )}
                     <button
                       onClick={() => { logout(); setShowUserDropdown(false) }}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-medium"
@@ -563,6 +573,16 @@ const Header = () => {
                   >
                     <Shield className="w-4 h-4" />
                     Admin Panel
+                  </Link>
+                )}
+                {user.role === 'seller' && (
+                  <Link
+                    to="/seller"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 text-slate-700 dark:text-slate-300 hover:text-emerald-600 dark:hover:text-emerald-400 text-sm font-medium transition-colors"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Seller Dashboard
                   </Link>
                 )}
                 <button

@@ -26,6 +26,11 @@ import AdminDashboard from './components/admin/AdminDashboard'
 import AdminOrders from './components/admin/AdminOrders'
 import AdminProducts from './components/admin/AdminProducts'
 import AdminCategories from './components/admin/AdminCategories'
+import AdminSellers from './components/admin/AdminSellers'
+import SellerLayout from './components/seller/SellerLayout'
+import SellerDashboard from './components/seller/SellerDashboard'
+import SellerProducts from './components/seller/SellerProducts'
+import SellerOrders from './components/seller/SellerOrders'
 import { useCart } from './context/CartContext'
 
 function AppContent() {
@@ -34,6 +39,7 @@ function AppContent() {
   const { toast, hideToast } = useCart()
   const location = useLocation()
   const isAdmin = location.pathname.startsWith('/admin')
+  const isSeller = location.pathname.startsWith('/seller')
 
   // Smooth scroll behavior
   useEffect(() => {
@@ -87,10 +93,18 @@ function AppContent() {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="categories" element={<AdminCategories />} />
+          <Route path="sellers" element={<AdminSellers />} />
+        </Route>
+
+        {/* Seller Panel */}
+        <Route path="/seller" element={<SellerLayout />}>
+          <Route index element={<SellerDashboard />} />
+          <Route path="products" element={<SellerProducts />} />
+          <Route path="orders" element={<SellerOrders />} />
         </Route>
       </Routes>
       
-      {!isAdmin && <Footer />}
+      {!isAdmin && !isSeller && <Footer />}
       
       {/* Cart Sidebar */}
       <Cart />

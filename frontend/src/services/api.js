@@ -162,11 +162,11 @@ const api = {
   },
 
   // ─── Auth ──────────────────────────────────────
-  register: async (name, email, password, phone = '') => {
+  register: async (name, email, password, phone = '', opts = {}) => {
     return safeFetch(`${API_BASE}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, password, phone })
+      body: JSON.stringify({ name, email, password, phone, ...opts })
     })
   },
 
@@ -266,8 +266,74 @@ const api = {
     deleteCategory: (id) =>
       safeFetch(`${API_BASE}/admin/categories/${id}`, { method: 'DELETE' }),
 
-    // Users (read-only)
-    getUsers: () => safeFetch(`${API_BASE}/admin/users`),
+    // Users
+    getUsers: (params = {}) => {
+      const query = new URLSearchParams(params).toString()
+      return safeFetch(`${API_BASE}/admin/users${query ? `?${query}` : ''}`)
+    },
+
+    // Seller management
+    getSellers: (params = {}) => {
+      const query = new URLSearchParams(params).toString()
+      return safeFetch(`${API_BASE}/admin/sellers${query ? `?${query}` : ''}`)
+    },
+    updateSellerStatus: (id, sellerStatus) =>
+      safeFetch(`${API_BASE}/admin/sellers/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sellerStatus }),
+      }),
+  },
+
+  // ─── Seller Dashboard ──────────────────────────
+  seller: {
+    getStats: () => safeFetch(`${API_BASE}/seller/stats`),
+
+    // Products
+    getProducts: () => safeFetch(`${API_BASE}/seller/products`),
+    uploadImage: async (file) => {
+      const formData = new FormData()
+      formData.append('image', file)
+      const token = localStorage.getItem('arvana_token')
+      const res = await fetch(`${API_BASE}/seller/upload`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error || 'Upload failed')
+      return json
+    },
+    createProduct: (data) =>
+      safeFetch(`${API_BASE}/seller/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }),
+    updateProduct: (id, data) =>
+      safeFetch(`${API_BASE}/seller/products/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }),
+    deleteProduct: (id) =>
+      safeFetch(`${API_BASE}/seller/products/${id}`, { method: 'DELETE' }),
+
+    // Orders
+    getOrders: (params = {}) => {
+      const query = new URLSearchParams(params).toString()
+      return safeFetch(`${API_BASE}/seller/orders${query ? `?${query}` : ''}`)
+    },
+    getOrder: (id) => safeFetch(`${API_BASE}/seller/orders/${id}`),
+    updateOrderStatus: (id, status) =>
+      safeFetch(`${API_BASE}/seller/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      }),
+
+    // Categories (read-only)
+    getCategories: () => safeFetch(`${API_BASE}/seller/categories`),
   },
 }
 

@@ -36,10 +36,10 @@ export const AuthProvider = ({ children }) => {
   }, [])
 
   // ─── Register ───
-  const register = useCallback(async (name, email, password, phone) => {
+  const register = useCallback(async (name, email, password, phone, opts = {}) => {
     setAuthError(null)
     try {
-      const res = await api.register(name, email, password, phone)
+      const res = await api.register(name, email, password, phone, opts)
       const { user: userData, token } = res.data
       localStorage.setItem('arvana_token', token)
       setUser(userData)

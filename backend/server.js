@@ -13,6 +13,8 @@ import categoryRoutes from './routes/categories.js'
 import reviewRoutes from './routes/reviews.js'
 import authRoutes from './routes/auth.js'
 import adminRoutes from './routes/admin.js'
+import sellerRoutes from './routes/seller.js'
+import User from './models/User.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -47,6 +49,7 @@ app.use('/api/orders', orderRoutes)
 app.use('/api/newsletter', newsletterRoutes)
 app.use('/api/reviews', reviewRoutes)
 app.use('/api/admin', adminRoutes)
+app.use('/api/seller', sellerRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -62,6 +65,13 @@ app.use('/api/*', (req, res) => {
 const start = async () => {
   try {
     await connectDB()
+
+    // One-time migration: convert legacy role 'user' → 'customer'
+    const migrated = await User.updateMany({ role: 'user' }, { $set: { role: 'customer' } })
+    if (migrated.modifiedCount > 0) {
+      console.log(`🔄 Migrated ${migrated.modifiedCount} user(s) from role "user" to "customer"`)
+    }
+
     app.listen(PORT, () => {
       console.log(`\n🚀 ARVANA Backend running on http://localhost:${PORT}`)
       console.log(`📦 API available at http://localhost:${PORT}/api\n`)
