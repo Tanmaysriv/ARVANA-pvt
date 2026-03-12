@@ -1,0 +1,16 @@
+{
+  "name": "arvana-monorepo",
+  "version": "1.0.0",
+  "description": "ARVANA - AR Virtual Try-On Platform",
+  "private": true,
+  "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "install:all": "npm run install:frontend && npm run install:backend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "dev": "start /B npm run dev:backend && timeout /t 2 && npm run dev:frontend",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start"
+  }
+}
