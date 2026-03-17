@@ -2,8 +2,10 @@ import { useRef, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 
+const PLANE_Z = -5
+
 export const WebcamBackground = ({ videoRef }) => {
-  const { gl, scene, camera } = useThree()
+  const { scene, camera, size } = useThree()
   const planeRef = useRef(null)
   const textureRef = useRef(null)
 
@@ -27,13 +29,22 @@ export const WebcamBackground = ({ videoRef }) => {
       texture.colorSpace = THREE.SRGBColorSpace
       textureRef.current = texture
 
-      // Calculate aspect ratio
-      const aspect = video.videoWidth / video.videoHeight
-      const height = 10
-      const width = height * aspect
+      // Compute plane size to EXACTLY fill the camera frustum at PLANE_Z
+      const dist = camera.position.z - PLANE_Z        // distance = 5 - (-5) = 10
+      const vFov = (camera.fov * Math.PI) / 180
+      const planeHeight = 2 * Math.tan(vFov / 2) * dist
+      const canvasAspect = size.width / size.height
+      const planeWidth = planeHeight * canvasAspect
+
+      // Cover-mode UV: preserve video aspect ratio, crop to fill canvas
+      const videoAspect = video.videoWidth / video.videoHeight
+      const scaleU = Math.min(1, videoAspect / canvasAspect)
+      const scaleV = Math.min(1, canvasAspect / videoAspect)
+      texture.repeat.set(scaleU, scaleV)
+      texture.offset.set((1 - scaleU) / 2, (1 - scaleV) / 2)
 
       // Create geometry and material
-      const geometry = new THREE.PlaneGeometry(width, height)
+      const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight)
       const material = new THREE.MeshBasicMaterial({
         map: texture,
         side: THREE.DoubleSide,
@@ -42,7 +53,7 @@ export const WebcamBackground = ({ videoRef }) => {
 
       // Create mesh
       const mesh = new THREE.Mesh(geometry, material)
-      mesh.position.z = -5
+      mesh.position.z = PLANE_Z
       mesh.name = 'webcam-background'
       planeRef.current = mesh
 
@@ -68,7 +79,7 @@ export const WebcamBackground = ({ videoRef }) => {
         textureRef.current = null
       }
     }
-  }, [videoRef, scene])
+  }, [videoRef, scene, camera, size])
 
   // Update texture every frame
   useEffect(() => {

@@ -1,6 +1,8 @@
 import { useRef, useEffect } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
+
+const MODEL_Z = -2.5
 
 export const VirtualTryOnModel = ({
   product,
@@ -10,20 +12,41 @@ export const VirtualTryOnModel = ({
   adjustments = { scale: 1, offsetX: 0, offsetY: 0, offsetZ: 0 }
 }) => {
   const groupRef = useRef()
-  const modelRef = useRef()
+  const { size, camera } = useThree()
+
+  // Convert a normalized keypoint position [0,1] to 3D world coords at MODEL_Z
+  // This accounts for camera FOV and canvas aspect ratio correctly
+  const keypointToWorld = (nx, ny) => {
+    const dist = camera.position.z - MODEL_Z
+    const halfH = Math.tan((camera.fov * Math.PI / 180) / 2) * dist
+    const halfW = halfH * (size.width / size.height)
+    return {
+      x: (nx * 2 - 1) * halfW,
+      y: -(ny * 2 - 1) * halfH
+    }
+  }
 
   // Helper to convert color names to hex
+  // Note: white/light colors use a pale-blue tint so they're always visible in AR
   const getColorHex = (colorName) => {
     const colorMap = {
-      'black': '#1f1f1f',
-      'white': '#ffffff',
-      'red': '#ff0000',
-      'blue': '#0000ff',
-      'green': '#00ff00',
-      'yellow': '#ffff00',
-      'gray': '#808080',
-      'grey': '#808080',
-      'purple': '#800080'
+      'black':      '#2a2a2a',
+      'white':      '#c8e6ff',   // pale blue-white — visible against any background
+      'red':        '#e53e3e',
+      'blue':       '#3b82f6',
+      'navy':       '#1e3a8a',
+      'green':      '#22c55e',
+      'yellow':     '#eab308',
+      'gray':       '#6b7280',
+      'grey':       '#6b7280',
+      'purple':     '#a855f7',
+      'brown':      '#92400e',
+      'tan':        '#d2b48c',
+      'silver':     '#94a3b8',
+      'gold':       '#f59e0b',
+      'rose gold':  '#e879a0',
+      'light blue': '#93c5fd',
+      'floral':     '#f472b6'
     }
     if (!colorName) return '#888888'
     return colorMap[colorName.toLowerCase()] || '#888888'
@@ -43,72 +66,84 @@ export const VirtualTryOnModel = ({
   useEffect(() => {
     if (!groupRef.current) return
 
-    let position = new THREE.Vector3(0, -0.5, -3) // Default center, slightly lower
+    let pos = new THREE.Vector3(0, -0.5, MODEL_Z + adjustments.offsetZ)
+    let scale = Math.max(1.0, adjustments.scale)
 
     if (poseKeypoints && Array.isArray(poseKeypoints) && poseKeypoints.length > 0) {
       switch (category) {
-        case 'clothes':
-          // Get shoulder keypoints for upper body
+        case 'clothes': {
           const leftShoulder = getKeypointByName(poseKeypoints, 'left_shoulder')
           const rightShoulder = getKeypointByName(poseKeypoints, 'right_shoulder')
+          const leftHip = getKeypointByName(poseKeypoints, 'left_hip')
+          const rightHip = getKeypointByName(poseKeypoints, 'right_hip')
 
-          if (leftShoulder && rightShoulder && leftShoulder.score > 0.5 && rightShoulder.score > 0.5) {
-            // Center between shoulders
-            const centerX = ((leftShoulder.x + rightShoulder.x) / 2 - 0.5) * 8
-            const centerY = (-(leftShoulder.y + rightShoulder.y) / 2 + 0.2) * 8
-            position.set(centerX + adjustments.offsetX, centerY + adjustments.offsetY, -2.5 + adjustments.offsetZ)
-          } else {
-            // Fallback: center screen, slightly lower
-            position.set(adjustments.offsetX, adjustments.offsetY - 0.8, -2.5 + adjustments.offsetZ)
+          if (leftShoulder && rightShoulder && leftShoulder.score > 0.3 && rightShoulder.score > 0.3) {
+            // Center between shoulders, shifted slightly down onto torso
+            const cx = (leftShoulder.x + rightShoulder.x) / 2
+            const cy = (leftShoulder.y + rightShoulder.y) / 2 + 0.1
+            const w = keypointToWorld(cx, cy)
+            pos.set(w.x + adjustments.offsetX, w.y + adjustments.offsetY, MODEL_Z + adjustments.offsetZ)
+
+            // Scale: use torso height if hip visible, else shoulder width
+            const dist = camera.position.z - MODEL_Z
+            const halfH = Math.tan((camera.fov * Math.PI / 180) / 2) * dist
+            const halfW = halfH * (size.width / size.height)
+
+            if (leftHip && leftHip.score > 0.3) {
+              const hipY = (leftHip.y + (rightHip?.y ?? leftHip.y)) / 2
+              const torsoNorm = Math.abs(cy - hipY)
+              scale = torsoNorm * halfH * 2 * 1.3 * adjustments.scale
+            } else {
+              const shoulderNorm = Math.abs(leftShoulder.x - rightShoulder.x)
+              scale = shoulderNorm * halfW * 2 * 1.6 * adjustments.scale
+            }
           }
           break
+        }
 
-        case 'shoes':
+        case 'shoes': {
           const leftAnkle = getKeypointByName(poseKeypoints, 'left_ankle')
-
-          if (leftAnkle && leftAnkle.score > 0.5) {
-            const ankleX = (leftAnkle.x - 0.5) * 8
-            const ankleY = -(leftAnkle.y - 0.9) * 8
-            position.set(ankleX + adjustments.offsetX, ankleY + adjustments.offsetY, -1.5 + adjustments.offsetZ)
+          if (leftAnkle && leftAnkle.score > 0.3) {
+            const w = keypointToWorld(leftAnkle.x, leftAnkle.y)
+            pos.set(w.x + adjustments.offsetX, w.y + adjustments.offsetY, MODEL_Z + adjustments.offsetZ)
+            scale = 1.2 * adjustments.scale
           }
           break
+        }
 
-        case 'watches':
+        case 'watches': {
           const leftWrist = getKeypointByName(poseKeypoints, 'left_wrist')
-          if (leftWrist && leftWrist.score > 0.5) {
-            const wristX = (leftWrist.x - 0.5) * 8
-            const wristY = -(leftWrist.y - 0.5) * 8
-            position.set(wristX + adjustments.offsetX, wristY + adjustments.offsetY, -0.5 + adjustments.offsetZ)
+          if (leftWrist && leftWrist.score > 0.3) {
+            const w = keypointToWorld(leftWrist.x, leftWrist.y)
+            pos.set(w.x + adjustments.offsetX, w.y + adjustments.offsetY, MODEL_Z + adjustments.offsetZ)
+            scale = 0.7 * adjustments.scale
           }
           break
+        }
 
-        case 'bags':
-          const hipLeft = getKeypointByName(poseKeypoints, 'left_hip')
-          if (hipLeft && hipLeft.score > 0.5) {
-            const hipX = (hipLeft.x - 0.3) * 8
-            const hipY = -(hipLeft.y - 0.5) * 8
-            position.set(hipX + adjustments.offsetX, hipY + adjustments.offsetY, -2 + adjustments.offsetZ)
+        case 'bags': {
+          const leftHip = getKeypointByName(poseKeypoints, 'left_hip')
+          if (leftHip && leftHip.score > 0.3) {
+            const w = keypointToWorld(leftHip.x - 0.08, leftHip.y)
+            pos.set(w.x + adjustments.offsetX, w.y + adjustments.offsetY, MODEL_Z + adjustments.offsetZ)
+            scale = 1.0 * adjustments.scale
           }
           break
+        }
 
         default:
-          position.set(adjustments.offsetX, adjustments.offsetY - 0.5, -3 + adjustments.offsetZ)
+          pos.set(adjustments.offsetX, adjustments.offsetY - 0.5, MODEL_Z + adjustments.offsetZ)
       }
     }
 
-    groupRef.current.position.copy(position)
-    // Increase default scale for better visibility
-    const scale = Math.max(0.8, adjustments.scale)
-    groupRef.current.scale.setScalar(scale)
-  }, [poseKeypoints, category, adjustments])
+    groupRef.current.position.copy(pos)
+    groupRef.current.scale.setScalar(Math.max(0.5, scale))
+  }, [poseKeypoints, category, adjustments, size, camera])
 
-  // Smooth animations
-  useFrame((state, delta) => {
-    if (modelRef.current) {
-      // Gentle rotation
-      modelRef.current.rotation.y += delta * 0.2
-      // Subtle floating
-      modelRef.current.position.y += Math.sin(state.clock.elapsedTime * 2) * 0.005
+  // Subtle floating animation only (no auto-rotation - that interferes with AR alignment)
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.position.y += Math.sin(state.clock.elapsedTime * 1.5) * 0.001
     }
   })
 
@@ -116,7 +151,7 @@ export const VirtualTryOnModel = ({
     console.warn('No model component provided')
     // Render a fallback cube for debugging
     return (
-      <group ref={groupRef} position={[0, 0, -3]}>
+      <group ref={groupRef} position={[0, 0, MODEL_Z]}>
         <mesh>
           <boxGeometry args={[1.5, 2, 0.8]} />
           <meshStandardMaterial color="#ffffff" />

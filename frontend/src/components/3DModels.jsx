@@ -284,22 +284,27 @@ export const ClassicTShirt = ({ color, rotation }) => {
       {/* Body */}
       <mesh position={[0, 0, 0]} castShadow>
         <boxGeometry args={[3, 3.5, 0.3]} />
-        <meshStandardMaterial color={color} roughness={0.8} />
+        <meshStandardMaterial color={color} roughness={0.7} emissive={color} emissiveIntensity={0.25} />
       </mesh>
       {/* Left sleeve */}
       <mesh position={[-2.1, 0.8, 0]} rotation={[0, 0, -0.4]} castShadow>
         <boxGeometry args={[1.5, 0.9, 0.3]} />
-        <meshStandardMaterial color={color} roughness={0.8} />
+        <meshStandardMaterial color={color} roughness={0.7} emissive={color} emissiveIntensity={0.25} />
       </mesh>
       {/* Right sleeve */}
       <mesh position={[2.1, 0.8, 0]} rotation={[0, 0, 0.4]} castShadow>
         <boxGeometry args={[1.5, 0.9, 0.3]} />
-        <meshStandardMaterial color={color} roughness={0.8} />
+        <meshStandardMaterial color={color} roughness={0.7} emissive={color} emissiveIntensity={0.25} />
       </mesh>
       {/* Collar */}
       <mesh position={[0, 1.85, 0]} castShadow>
         <boxGeometry args={[0.8, 0.2, 0.3]} />
-        <meshStandardMaterial color={color} roughness={0.7} />
+        <meshStandardMaterial color={color} roughness={0.7} emissive={color} emissiveIntensity={0.25} />
+      </mesh>
+      {/* Outline edge to make it pop against background */}
+      <mesh position={[0, 0, -0.2]}>
+        <boxGeometry args={[3.2, 3.7, 0.05]} />
+        <meshBasicMaterial color="#1e293b" transparent opacity={0.7} />
       </mesh>
     </group>
   )
