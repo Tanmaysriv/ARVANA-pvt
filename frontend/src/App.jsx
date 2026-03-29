@@ -6,7 +6,7 @@ import CategoryShowcase from './components/CategoryShowcase'
 import ProductCatalog from './components/ProductCatalog'
 import BrandShowcase from './components/BrandShowcase'
 import ContactForm from './components/ContactForm'
-import ARTryOn from './components/ARTryOn'
+import ARTryOnV2 from './components/ARTryOnV2'
 import Footer from './components/Footer'
 import Cart from './components/Cart'
 import Wishlist from './components/Wishlist'
@@ -119,14 +119,12 @@ function AppContent() {
         onClose={hideToast} 
       />
       
-      {/* AR Modal Overlay */}
+      {/* AR Try-On V2 Modal */}
       {showAR && selectedProduct && (
-        <div className="fixed inset-0 z-50 bg-black">
-          <ARTryOn 
-            product={selectedProduct} 
-            onClose={handleCloseAR}
-          />
-        </div>
+        <ARTryOnV2
+          product={selectedProduct}
+          onClose={handleCloseAR}
+        />
       )}
     </div>
   )

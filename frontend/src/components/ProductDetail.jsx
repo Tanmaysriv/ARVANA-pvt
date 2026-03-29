@@ -270,24 +270,40 @@ const ProductDetail = ({ onTryOn }) => {
 
               {/* Quick action buttons below image */}
               <div className="flex gap-3 mt-4">
+                {/* ARVANA AR Try-On — premium WANNA.fashion-style CTA */}
                 <button
                   onClick={() => onTryOn(product)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 text-white font-semibold text-sm hover:from-sky-600 hover:to-sky-700 transition-all shadow-md"
+                  className="flex-[2] relative flex items-center justify-center gap-2.5 py-3.5 rounded-2xl text-white font-bold text-sm transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.98] overflow-hidden"
+                  style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)' }}
                 >
+                  {/* Animated shine */}
+                  <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2.5s_infinite]" style={{ animation: 'shimmer 2.5s infinite' }} />
+                  {/* Live pulse dot */}
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-60" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-white" />
+                  </span>
                   <Camera className="w-4 h-4" />
-                  AR Try-On
+                  Try On Live
                 </button>
+
                 <button
                   onClick={() => setShow3DViewer(true)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold text-sm hover:from-purple-600 hover:to-purple-700 transition-all shadow-md"
+                  className="flex-1 flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{
+                    background: 'rgba(99,102,241,0.08)',
+                    border: '1.5px solid rgba(99,102,241,0.3)',
+                    color: '#6366f1',
+                  }}
                 >
                   <Box className="w-4 h-4" />
                   3D View
                 </button>
+
                 <button
                   onClick={() => setShowQRModal(true)}
-                  className="px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                  title="QR Code"
+                  className="px-3.5 py-3.5 rounded-2xl transition-all hover:scale-[1.05] active:scale-95 text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600"
+                  title="Try on mobile via QR"
                 >
                   <QrCode className="w-4 h-4" />
                 </button>

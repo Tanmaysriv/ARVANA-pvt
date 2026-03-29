@@ -1,58 +1,93 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { X, Camera, RotateCcw, Download, Share2, Settings, ZoomIn, ZoomOut } from 'lucide-react'
 import { useARDetection } from '../hooks/useARDetection'
+import {
+  getBodyRotation, getTorsoTilt, getBodyWidth, getBodyHeight,
+  getShoulderCenter, getHipCenter, smoothValue, getPerspectiveSkew,
+  getDynamicOpacity
+} from '../services/bodyPerspectiveMapper'
 
 // ─── Draw helpers ──────────────────────────────────────────────────────────────
 
 /**
- * Draw the product image overlaid on the body using canvas 2D.
- * kp   : normalised keypoints from BlazePose / MediaPipe Hands (x,y in 0-1)
- * Front camera video is mirrored, so we flip x: mirroredX = 1 - kp.x
+ * Draw product overlay with perspective transforms based on body movement
+ * - Rotates overlay as body rotates
+ * - Scales based on actual body measurements
+ * - Smooth animation following body motion
  */
-const drawOverlay = (ctx, img, kp, category, cw, ch, adj) => {
-  const get = (name) => kp?.find(k => k.name === name)
+const drawOverlay = (ctx, img, kp, category, cw, ch, adj, motionState) => {
+  console.log('🎨 drawOverlay called:', { kp: !!kp, kpLen: kp?.length, motionState: !!motionState })
+  
+  if (!kp?.length) {
+    // Fallback: draw placeholder at center when no pose detected
+    console.log('⚠️ No keypoints - drawing fallback placeholder')
+    const rw = cw * 0.4 * adj.scale
+    const rh = ch * 0.35 * adj.scale
+    const rx = cw / 2 - rw / 2
+    const ry = ch / 2 - rh / 2
+    
+    ctx.save()
+    ctx.globalAlpha = 0.6
+    ctx.fillStyle = 'rgba(99,102,241,0.3)'
+    ctx.fillRect(rx, ry, rw, rh)
+    ctx.strokeStyle = 'rgba(99,102,241,0.9)'
+    ctx.lineWidth = 2
+    ctx.strokeRect(rx, ry, rw, rh)
+    ctx.restore()
+    return
+  }
+
+  const get = (name) => kp.find(k => k.name === name)
   const mx  = (k) => (1 - k.x) * cw
   const my  = (k) => k.y * ch
 
-  // ── Compute draw rect based on category + keypoints ──────────────────────
-  let rx = cw * 0.25, ry = ch * 0.3, rw = cw * 0.5, rh = ch * 0.4  // defaults
+  // ── Calculate body measurements ──────────────────────────────────────────
+  const bodyRotation = smoothValue(getBodyRotation(kp), motionState?.prevRotation || 0, 0.2)
+  const torsoTilt = smoothValue(getTorsoTilt(kp), motionState?.prevTilt || 0, 0.2)
+  const bodyWidth = getBodyWidth(kp) * cw
+  const bodyHeight = getBodyHeight(kp) * ch
+
+  // Save motion state for next frame
+  if (motionState) {
+    motionState.prevRotation = bodyRotation
+    motionState.prevTilt = torsoTilt
+  }
+
+  // ── Compute overlay position & size ────────────────────────────────────────
+  let rx = cw * 0.25, ry = ch * 0.3, rw = cw * 0.5, rh = ch * 0.4
+  let rotation = 0
+  let center = { x: cw / 2, y: ch / 3 }
 
   switch (category) {
     case 'clothes': {
       const ls = get('left_shoulder'), rs = get('right_shoulder')
-      const lhKp = get('left_hip'),    rhKp = get('right_hip')
+      const lhKp = get('left_hip'), rhKp = get('right_hip')
       if (ls && rs && ls.score > 0.1 && rs.score > 0.1) {
-        const sx = (mx(ls) + mx(rs)) / 2
-        const sy = (my(ls) + my(rs)) / 2
-        const hipY = (lhKp && lhKp.score > 0.1) ? (my(lhKp) + (rhKp ? my(rhKp) : my(lhKp))) / 2 : sy + ch * 0.3
-        const span = Math.abs(mx(rs) - mx(ls))
-        rw = span * 1.6 * adj.scale
-        rh = (hipY - sy) * 1.5 * adj.scale
-        rx = sx - rw / 2 + adj.offsetX * cw * 0.05
-        ry = sy - rh * 0.08 + adj.offsetY * ch * 0.05
+        center = getShoulderCenter(kp, cw, ch)
+        rw = bodyWidth * 1.5 * adj.scale
+        rh = bodyHeight * 1.4 * adj.scale
+        rotation = bodyRotation * 0.6 // Scale down rotation for realistic effect
       } else {
-        // fallback: centre torso
         rw = cw * 0.55 * adj.scale; rh = ch * 0.45 * adj.scale
-        rx = cw / 2 - rw / 2 + adj.offsetX * cw * 0.05
-        ry = ch * 0.32 + adj.offsetY * ch * 0.05
       }
       break
     }
     case 'watches': {
       const wrist = get('left_wrist') || get('right_wrist')
       if (wrist && wrist.score > 0.1) {
+        center = { x: mx(wrist), y: my(wrist) }
         rw = cw * 0.13 * adj.scale; rh = rw
-        rx = mx(wrist) - rw / 2 + adj.offsetX * cw * 0.05
-        ry = my(wrist) - rh / 2 + adj.offsetY * ch * 0.05
+        // Wrist rotation follows hand tilt
+        rotation = bodyRotation * 0.8
       }
       break
     }
     case 'bags': {
       const ls = get('left_shoulder')
       if (ls && ls.score > 0.1) {
+        center = { x: mx(ls) - cw * 0.08, y: my(ls) + ch * 0.02 }
         rw = cw * 0.24 * adj.scale; rh = rw * 1.1
-        rx = mx(ls) - rw * 0.8 + adj.offsetX * cw * 0.05
-        ry = my(ls) + ch * 0.02 + adj.offsetY * ch * 0.05
+        rotation = bodyRotation * 0.4 // Bags rotate less
       }
       break
     }
@@ -60,31 +95,46 @@ const drawOverlay = (ctx, img, kp, category, cw, ch, adj) => {
       const la = get('left_ankle'), ra = get('right_ankle')
       rw = cw * 0.2 * adj.scale; rh = rw * 0.55
       if (la && la.score > 0.1) {
-        ctx.save(); ctx.globalAlpha = 0.85
-        if (img) ctx.drawImage(img, mx(la) - rw / 2 + adj.offsetX * cw * 0.05, my(la) - rh * 0.3 + adj.offsetY * ch * 0.05, rw, rh)
+        ctx.save()
+        ctx.globalAlpha = getDynamicOpacity(kp, 0.85)
+        ctx.translate(mx(la), my(la))
+        ctx.rotate((rotation * Math.PI) / 180)
+        if (img) ctx.drawImage(img, -rw / 2 + adj.offsetX * cw * 0.05, -rh * 0.3 + adj.offsetY * ch * 0.05, rw, rh)
         ctx.restore()
       }
       if (ra && ra.score > 0.1) {
-        ctx.save(); ctx.globalAlpha = 0.85
-        ctx.translate(mx(ra), my(ra)); ctx.scale(-1, 1); ctx.translate(-mx(ra), -my(ra))
-        if (img) ctx.drawImage(img, mx(ra) - rw / 2 + adj.offsetX * cw * 0.05, my(ra) - rh * 0.3 + adj.offsetY * ch * 0.05, rw, rh)
+        ctx.save()
+        ctx.globalAlpha = getDynamicOpacity(kp, 0.85)
+        ctx.translate(mx(ra), my(ra))
+        ctx.scale(-1, 1)
+        ctx.rotate((rotation * Math.PI) / 180)
+        if (img) ctx.drawImage(img, -rw / 2 + adj.offsetX * cw * 0.05, -rh * 0.3 + adj.offsetY * ch * 0.05, rw, rh)
         ctx.restore()
       }
       return
     }
     default: {
       rw = cw * 0.4 * adj.scale; rh = ch * 0.35 * adj.scale
-      rx = cw / 2 - rw / 2; ry = ch / 2 - rh / 2
+      center = { x: cw / 2, y: ch / 2 }
     }
   }
 
-  // ── Draw the product image (or a tinted placeholder while loading) ────────
+  // ── Apply transforms & draw overlay ────────────────────────────────────────
+  rx = center.x - rw / 2 + adj.offsetX * cw * 0.05
+  ry = center.y - rh / 2 + adj.offsetY * ch * 0.05
+
   ctx.save()
-  ctx.globalAlpha = 0.85
+  ctx.globalAlpha = getDynamicOpacity(kp, 0.85)
+
+  // Translate to center, rotate, translate back
+  ctx.translate(center.x, center.y)
+  ctx.rotate((rotation * Math.PI) / 180)
+  ctx.translate(-center.x, -center.y)
+
   if (img) {
     ctx.drawImage(img, rx, ry, rw, rh)
   } else {
-    // Placeholder: semi-transparent coloured rectangle so you can see positioning
+    // Placeholder
     ctx.fillStyle = 'rgba(99,102,241,0.45)'
     ctx.fillRect(rx, ry, rw, rh)
     ctx.strokeStyle = 'rgba(99,102,241,0.9)'
@@ -93,8 +143,9 @@ const drawOverlay = (ctx, img, kp, category, cw, ch, adj) => {
     ctx.fillStyle = '#fff'
     ctx.font = `bold ${Math.round(rw * 0.08)}px sans-serif`
     ctx.textAlign = 'center'
-    ctx.fillText('Loading...', rx + rw / 2, ry + rh / 2)
+    ctx.fillText('Loading...', center.x, center.y)
   }
+
   ctx.restore()
 }
 
@@ -169,6 +220,12 @@ const ARTryOn = ({ product, onClose }) => {
 
     const category = product?.category
 
+    // Motion state for smooth real-time body tracking
+    const motionState = {
+      prevRotation: 0,
+      prevTilt: 0
+    }
+
     const draw = () => {
       if (!canvasRef.current) return
       const ctx = canvasRef.current.getContext('2d')
@@ -181,12 +238,31 @@ const ARTryOn = ({ product, onClose }) => {
       ctx.drawImage(videoRef.current, -cw, 0, cw, ch)
       ctx.restore()
 
-      // 2) Always draw product overlay — shows placeholder if image not yet loaded
+      // Debug: Add grid overlay to show canvas is active
+      // ctx.strokeStyle = 'rgba(255,0,0,0.2)'
+      // ctx.lineWidth = 1
+      // for(let i = 0; i < cw; i += 50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, ch); ctx.stroke() }
+
+      // 2) Always draw product overlay with body-tracking perspective transforms
       try {
+        console.log('🎬 Drawing overlay:', {
+          hasPose: !!poseRef.current,
+          poseLength: poseRef.current?.length,
+          hasImg: !!imgRef.current,
+          category,
+          canvasDim: `${cw}x${ch}`,
+          adjRef: adjRef.current
+        })
         drawOverlay(ctx, imgRef.current, poseRef.current,
-          category, cw, ch, adjRef.current)
+          category, cw, ch, adjRef.current, motionState)
       } catch (e) {
-        console.warn('Overlay draw error:', e)
+        console.error('❌ Overlay draw error:', e)
+        // Draw error indicator
+        ctx.fillStyle = 'rgba(255,0,0,0.5)'
+        ctx.fillRect(10, 10, 200, 50)
+        ctx.fillStyle = '#fff'
+        ctx.font = '14px sans-serif'
+        ctx.fillText('Error: ' + e.message, 15, 35)
       }
 
       frameRef.current = requestAnimationFrame(draw)
