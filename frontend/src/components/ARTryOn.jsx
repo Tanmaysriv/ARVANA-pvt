@@ -238,11 +238,6 @@ const ARTryOn = ({ product, onClose }) => {
       ctx.drawImage(videoRef.current, -cw, 0, cw, ch)
       ctx.restore()
 
-      // Debug: Add grid overlay to show canvas is active
-      // ctx.strokeStyle = 'rgba(255,0,0,0.2)'
-      // ctx.lineWidth = 1
-      // for(let i = 0; i < cw; i += 50) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, ch); ctx.stroke() }
-
       // 2) Always draw product overlay with body-tracking perspective transforms
       try {
         console.log('🎬 Drawing overlay:', {

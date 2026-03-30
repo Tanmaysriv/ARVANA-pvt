@@ -83,7 +83,6 @@ export class AREngine {
     // Init tracker with timeout — MediaPipe WASM can hang
     try {
       await this._withTimeout(this._setupTracker(trackerType), 20000)
-      console.log('[AREngine] Tracker initialized successfully')
     } catch (err) {
       console.error('[AREngine] Tracker init failed or timed out:', err)
       this._setStatus('error')
@@ -109,8 +108,6 @@ export class AREngine {
     const w = this.canvas.width || 640
     const h = this.canvas.height || 480
     const aspect = w / h
-
-    console.log(`[AREngine._setupThree] Canvas: ${w}x${h}, aspect: ${aspect.toFixed(3)}`)
 
     this.scene = new THREE.Scene()
 
@@ -138,8 +135,6 @@ export class AREngine {
     const ambient = new THREE.AmbientLight(0xfff5e6, 0.55)
     this.scene.add(ambient)
 
-    console.log(`[AREngine._setupThree] Lights added, scene children: ${this.scene.children.length}`)
-
     // ── Environment map for realistic PBR reflections ──
     this._addEnvironmentMap()
 
@@ -155,8 +150,6 @@ export class AREngine {
     this.threeRenderer.toneMapping = THREE.ACESFilmicToneMapping
     this.threeRenderer.toneMappingExposure = 1.1
     this.threeRenderer.outputColorSpace = THREE.SRGBColorSpace
-
-    console.log(`✓ Three.js WebGLRenderer created: ${w}x${h}, canvas ID: ${this.threeRenderer.domElement?.id || 'none'}`)
   }
 
   _addEnvironmentMap() {
@@ -210,30 +203,23 @@ export class AREngine {
   _setupRenderer(rendererType) {
     const color = this.product?.colors?.[0] || '#2c2c2c'
 
-    console.log(`[AREngine] Setting up renderer: ${rendererType}, color: ${color}`)
-
     switch (rendererType) {
       case 'watch':
         this.productRenderer = new WatchRenderer(this.scene, color)
-        console.log(`✓ WatchRenderer created, scene children: ${this.scene.children.length}`)
         break
       case 'ring':
         this.productRenderer = new RingRenderer(this.scene, color, 'solitaire')
-        console.log(`✓ RingRenderer created, scene children: ${this.scene.children.length}`)
         break
       case 'shoe':
         this.leftShoeRenderer = new ShoeRenderer(this.scene, color, 'left')
         this.rightShoeRenderer = new ShoeRenderer(this.scene, color, 'right')
         this.productRenderer = this.rightShoeRenderer
-        console.log(`✓ ShoeRenderer (L+R) created, scene children: ${this.scene.children.length}`)
         break
       case 'bag':
         this.productRenderer = new BagRenderer(this.scene, color)
-        console.log(`✓ BagRenderer created, scene children: ${this.scene.children.length}`)
         break
       case 'clothes':
         this.productRenderer = new ClothesRenderer(this.scene, color, this.product?.name || '')
-        console.log(`✓ ClothesRenderer created, scene children: ${this.scene.children.length}`)
         break
       default:
         console.warn(`⚠️ Unknown renderer type: ${rendererType}`)
@@ -249,10 +235,6 @@ export class AREngine {
     const handedness = results?.multiHandedness?.[0]?.label || 'Right'
     this._landmarks = landmarks || null
     this._handedness = handedness
-
-    if (landmarks && this._frameCount % 15 === 0) {
-      console.log(`[HandTracker] Got ${landmarks.length} landmarks, handedness=${handedness}, wrist=(${landmarks[0]?.x?.toFixed(2)}, ${landmarks[0]?.y?.toFixed(2)})`)
-    }
 
     this._setStatus(landmarks ? 'ready' : 'positioning')
   }
@@ -308,11 +290,6 @@ export class AREngine {
       this.threeRenderer.render(this.scene, this.camera)
     }
 
-    // Debug: Every 10 frames, log render state
-    if (this._frameCount % 10 === 0) {
-      console.log(`[AREngine Frame ${this._frameCount}] Three.js setup: ${this.threeRenderer ? '✓' : '✗'} | Scene children: ${this.scene?.children?.length || 0} | Landmarks: ${this._landmarks ? this._landmarks.length : 0} | Status: ${this._status}`)
-    }
-
     // Composite: webcam + 3D overlay → output canvas
     this._composite()
 
@@ -324,14 +301,6 @@ export class AREngine {
     const vh = this.video?.videoHeight || 720
     const cw = this.canvas?.width || 1280
     const ch = this.canvas?.height || 720
-
-    // Debug: Log coordinate system info once
-    if (this._frameCount === 5) {
-      console.log(`[AREngine] Coordinate System:
-        Video: ${vw}x${vh}, Canvas: ${cw}x${ch}
-        Aspect: ${(vw/vh).toFixed(3)}, Camera: [-${(cw/ch).toFixed(3)}, +${(cw/ch).toFixed(3)}, 1, -1]
-        Composite: Apply mirror (ctx.scale(-1,1)) to BOTH video and Three.js`)
-    }
 
     if (!this._landmarks) {
       this.productRenderer?.setVisible?.(false)
@@ -394,11 +363,6 @@ export class AREngine {
     // 2. Draw Three.js overlay (NOT mirrored — it handles coordinate mapping internally)
     if (this.threeRenderer?.domElement) {
       ctx.drawImage(this.threeRenderer.domElement, 0, 0, width, height)
-      
-      // Debug sample
-      if (this._frameCount % 30 === 0) {
-        console.log(`[Composite] Drew Three.js canvas at (0,0) size ${width}x${height}`)
-      }
     } else {
       if (this._frameCount % 30 === 0) {
         console.warn(`⚠️ threeRenderer.domElement missing!`)

@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import Product from '../models/Product.js'
 import Category from '../models/Category.js'
 import Review from '../models/Review.js'
+import User from '../models/User.js'
 
 dotenv.config()
 
@@ -251,15 +252,54 @@ const seed = async () => {
     await mongoose.connect(process.env.MONGO_URI)
     console.log('✅ Connected to MongoDB')
 
+    // ═══════════════════════════════════════════════════════
+    // 1. CREATE/FIND DEFAULT SELLER
+    // ═══════════════════════════════════════════════════════
+    let seller = await User.findOne({ email: 'maihu@gmail.com' })
+    
+    if (!seller) {
+      console.log('👤 Creating default seller account...')
+      seller = await User.create({
+        name: 'Maihu Store',
+        email: 'maihu@gmail.com',
+        password: 'maihu123',  // Change this to a secure password
+        phone: '+91-9876543210',
+        role: 'seller',
+        sellerStatus: 'approved',
+        storeName: 'Maihu Fashion Store',
+        storeDescription: 'Premium fashion and lifestyle products with AR virtual try-on',
+        gstNumber: 'GST123456789',
+        address: {
+          street: '123 Fashion Street',
+          city: 'Mumbai',
+          state: 'Maharashtra',
+          pincode: '400001',
+          country: 'India'
+        }
+      })
+      console.log(`✅ Created seller: ${seller.name} (${seller.email})`)
+    } else {
+      console.log(`✅ Found existing seller: ${seller.name} (${seller.email})`)
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // 2. SEED DATA WITH SELLER REFERENCE
+    // ═══════════════════════════════════════════════════════
     // Clear existing data
     await Product.deleteMany({})
     await Category.deleteMany({})
     await Review.deleteMany({})
     console.log('🗑️  Cleared existing data')
 
+    // Add seller reference to all products
+    const productsWithSeller = products.map(product => ({
+      ...product,
+      seller: seller._id  // ← Link all products to the seller
+    }))
+
     // Insert seed data
-    await Product.insertMany(products)
-    console.log(`📦 Seeded ${products.length} products`)
+    await Product.insertMany(productsWithSeller)
+    console.log(`📦 Seeded ${productsWithSeller.length} products (all owned by ${seller.email})`)
 
     await Category.insertMany(categories)
     console.log(`📂 Seeded ${categories.length} categories`)
@@ -268,6 +308,12 @@ const seed = async () => {
     console.log(`⭐ Seeded ${reviews.length} reviews`)
 
     console.log('\n✅ Database seeded successfully!')
+    console.log(`\n📌 Seller Login Credentials:`)
+    console.log(`   Email: maihu@gmail.com`)
+    console.log(`   Password: maihu123`)
+    console.log(`   Role: seller`)
+    console.log(`   Status: approved`)
+    
     process.exit(0)
   } catch (error) {
     console.error('❌ Seed error:', error.message)

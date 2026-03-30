@@ -8,6 +8,14 @@ import api from '../services/api'
 
 const WHATSAPP_NUMBER = '919506720216'
 
+// ═══ PAYMENT CONFIGURATION ═══
+const PAYMENT_CONFIG = {
+  upiId: 'tamarshss2003-1@okicici',  // Your UPI ID
+  qrCodeUrl: '/payment-qr.jpg',  // QR code in public folder
+  bankName: 'ICICI Bank',
+  accountName: 'Tamarsh Shekhar Singh',
+}
+
 
 const Checkout = () => {
   const navigate = useNavigate()
@@ -131,10 +139,42 @@ const Checkout = () => {
         clearCart()
         setStep(3)
 
-        // If WhatsApp payment selected, open WhatsApp with order details
+        // If WhatsApp payment selected, open WhatsApp with detailed payment instructions
         if (paymentMethod === 'whatsapp') {
-          const itemsList = cartItems.map(item => `• ${item.name} x${item.quantity} — ₹${(item.price * item.quantity).toLocaleString('en-IN')}`).join('\n')
-          const msg = `🛒 *ARVANA Order #${res.data.orderNumber}*\n\n${itemsList}\n\n*Total: ₹${res.data.total.toLocaleString('en-IN')}*\n\nShip to: ${address.fullName}, ${address.city}, ${address.state} - ${address.pincode}\nPhone: ${address.phone}\n\nPlease share payment details. 🙏`
+          const itemsList = cartItems.map(item => `• ${item.name} x${item.quantity} — Rs.${(item.price * item.quantity).toLocaleString('en-IN')}`).join('\n')
+          
+          const msg = `*ARVANA Order #${res.data.orderNumber}*\n\n` +
+            `${itemsList}\n\n` +
+            `*Order Summary:*\n` +
+            `Subtotal: Rs.${subtotal.toLocaleString('en-IN')}\n` +
+            `Shipping: ${shipping === 0 ? 'FREE' : `Rs.${shipping}`}\n` +
+            `-------------------------\n` +
+            `*Total: Rs.${res.data.total.toLocaleString('en-IN')}*\n\n` +
+            `*Delivery Address:*\n` +
+            `${address.fullName}\n` +
+            `${address.street}\n` +
+            `${address.city}, ${address.state} - ${address.pincode}\n` +
+            `Phone: ${address.phone}\n\n` +
+            `-------------------------\n\n` +
+            `*PAYMENT OPTIONS:*\n\n` +
+            `*Option 1: UPI Payment (Recommended)*\n` +
+            `UPI ID: ${PAYMENT_CONFIG.upiId}\n` +
+            `Copy the UPI ID and pay via any UPI app\n\n` +
+            `*Option 2: Scan QR Code*\n` +
+            `View QR: ${window.location.origin}/payment-qr.jpg\n` +
+            `Scan & pay using Google Pay, PhonePe, Paytm\n\n` +
+            `*Option 3: Bank Transfer*\n` +
+            `Bank: ${PAYMENT_CONFIG.bankName}\n` +
+            `Name: ${PAYMENT_CONFIG.accountName}\n\n` +
+            `-------------------------\n\n` +
+            `*After Payment:*\n` +
+            `1. Take a screenshot of payment\n` +
+            `2. Send it to this number\n` +
+            `3. We'll confirm your order immediately!\n\n` +
+            `*Delivery:* 3-5 business days\n` +
+            `*Support:* Reply to this message for any queries\n\n` +
+            `Thank you for shopping with ARVANA!`
+          
           const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
           // Small delay so user sees the confirmation screen first
           setTimeout(() => window.open(waUrl, '_blank'), 1200)
@@ -158,13 +198,20 @@ const Checkout = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-lg mx-auto text-center py-12"
         >
-          <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="w-10 h-10 text-emerald-600" />
+          <div className={`w-20 h-20 ${orderPlaced.paymentMethod === 'whatsapp' ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-emerald-100 dark:bg-emerald-900/30'} rounded-full flex items-center justify-center mx-auto mb-6`}>
+            <CheckCircle2 className={`w-10 h-10 ${orderPlaced.paymentMethod === 'whatsapp' ? 'text-amber-600' : 'text-emerald-600'}`} />
           </div>
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">Order Confirmed!</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">
+            {orderPlaced.paymentMethod === 'whatsapp' ? 'Order Placed!' : 'Order Confirmed!'}
+          </h1>
           <p className="text-slate-500 dark:text-slate-400 mb-1">
             Order Number: <span className="font-semibold text-sky-600">{orderPlaced.orderNumber}</span>
           </p>
+          {orderPlaced.paymentMethod === 'whatsapp' && (
+            <p className="text-amber-600 dark:text-amber-400 font-semibold text-sm mb-2">
+              ⏳ Awaiting Payment Confirmation
+            </p>
+          )}
           <p className="text-slate-500 dark:text-slate-400 mb-8">
             Estimated delivery by{' '}
             <span className="font-semibold">
@@ -175,14 +222,54 @@ const Checkout = () => {
           </p>
 
           {orderPlaced.paymentMethod === 'whatsapp' && (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-5 mb-6 text-left">
-              <div className="flex items-center gap-3 mb-2">
-                <MessageCircle className="w-5 h-5 text-green-600" />
-                <h4 className="font-semibold text-green-800 dark:text-green-300 text-sm">Complete Payment via WhatsApp</h4>
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-700 rounded-2xl p-6 mb-6 text-left">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-800 rounded-full flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5 text-green-600 dark:text-green-300" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-green-900 dark:text-green-100 text-base">WhatsApp Payment</h4>
+                  <p className="text-xs text-green-700 dark:text-green-400">Complete payment to confirm your order</p>
+                </div>
               </div>
-              <p className="text-xs text-green-700 dark:text-green-400 mb-3">
-                A WhatsApp window has been opened with your order details. Send the message and follow the payment instructions from our team.
-              </p>
+              
+              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 mb-4">
+                <p className="text-sm font-semibold text-slate-800 dark:text-white mb-3">📱 Payment Methods:</p>
+                <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-green-600">1.</span>
+                    <div>
+                      <p className="font-semibold">UPI Payment (Fastest)</p>
+                      <p className="text-slate-600 dark:text-slate-400">UPI ID: <span className="font-mono font-bold text-green-700 dark:text-green-400">{PAYMENT_CONFIG.upiId}</span></p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-green-600">2.</span>
+                    <div>
+                      <p className="font-semibold">Scan QR Code</p>
+                      <p className="text-slate-600 dark:text-slate-400">Use any UPI app to scan and pay</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="font-bold text-green-600">3.</span>
+                    <div>
+                      <p className="font-semibold">Bank Transfer</p>
+                      <p className="text-slate-600 dark:text-slate-400">{PAYMENT_CONFIG.bankName}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-lg p-3 mb-4">
+                <p className="text-xs font-semibold text-amber-900 dark:text-amber-200 mb-1">⚡ Next Steps:</p>
+                <ol className="text-xs text-amber-800 dark:text-amber-300 space-y-1 ml-4 list-decimal">
+                  <li>Open the WhatsApp chat (auto-opened)</li>
+                  <li>Choose your payment method from the message</li>
+                  <li>Complete payment</li>
+                  <li>Send payment screenshot to confirm</li>
+                </ol>
+              </div>
+
               <a
                 href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hi, I placed order #${orderPlaced.orderNumber}. Total: ₹${orderPlaced.total.toLocaleString('en-IN')}. Please share payment details.`)}`}
                 target="_blank"
@@ -192,6 +279,52 @@ const Checkout = () => {
                 <MessageCircle className="w-4 h-4" />
                 Open WhatsApp Again
               </a>
+            </div>
+          )}
+
+          {orderPlaced.paymentMethod === 'cod' && (
+            <div className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 border-2 border-blue-300 dark:border-blue-700 rounded-2xl p-6 mb-6 text-left">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center">
+                  <Truck className="w-5 h-5 text-blue-600 dark:text-blue-300" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-blue-900 dark:text-blue-100 text-base">Cash on Delivery</h4>
+                  <p className="text-xs text-blue-700 dark:text-blue-400">Pay when your order arrives</p>
+                </div>
+              </div>
+              
+              <div className="bg-white/50 dark:bg-slate-800/50 rounded-xl p-4 mb-4">
+                <p className="text-sm font-semibold text-slate-800 dark:text-white mb-3">💵 Payment Details:</p>
+                <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300">
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-600">✓</span>
+                    <p>No advance payment required</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-600">✓</span>
+                    <p>Pay <span className="font-bold text-blue-700 dark:text-blue-400">₹{orderPlaced.total.toLocaleString('en-IN')}</span> to delivery person</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-600">✓</span>
+                    <p>Cash or UPI payment accepted at delivery</p>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <span className="text-blue-600">✓</span>
+                    <p>Please keep exact amount or UPI ready</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 rounded-lg p-3">
+                <p className="text-xs font-semibold text-emerald-900 dark:text-emerald-200 mb-1">📦 What's Next:</p>
+                <ol className="text-xs text-emerald-800 dark:text-emerald-300 space-y-1 ml-4 list-decimal">
+                  <li>Your order is being prepared</li>
+                  <li>We'll notify you when it ships</li>
+                  <li>Delivery in 3-5 business days</li>
+                  <li>Pay cash/UPI to delivery person</li>
+                </ol>
+              </div>
             </div>
           )}
 

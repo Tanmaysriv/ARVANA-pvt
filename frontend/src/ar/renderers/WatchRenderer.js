@@ -206,11 +206,6 @@ export class WatchRenderer {
     this.watchGroup.position.copy(transform.position)
     this.watchGroup.rotation.copy(transform.rotation)
     this.watchGroup.scale.copy(transform.scale)
-
-    // Sample logging (5% chance per frame)
-    if (Math.random() < 0.05) {
-      console.log(`[WatchRenderer.applyTransform] pos=(${transform.position.x.toFixed(2)}, ${transform.position.y.toFixed(2)}), scale=${transform.scale.x.toFixed(3)}`)
-    }
   }
 
   setColor(color) {

@@ -55,25 +55,8 @@ export class VtoPoseEngine {
 
     const shouldersVisible = LS && RS &&
       (LS.visibility ?? 1) > visThr && (RS.visibility ?? 1) > visThr
-    let hipsVisible = LH && RH &&
-      (LH.visibility ?? 1) > visThr && (RH.visibility ?? 1) > visThr
 
-    let eLeftHip  = LH
-    let eRightHip = RH
-
-    // Estimate hips from shoulders when hips not in frame
-    if (shouldersVisible && !hipsVisible) {
-      const sw = Math.abs(LS.x - RS.x)
-      const estimatedTorsoH = sw * 1.3
-      const mz = (LS.z + RS.z) / 2
-      eLeftHip  = { x: LS.x, y: LS.y + estimatedTorsoH, z: mz, visibility: 0.3 }
-      eRightHip = { x: RS.x, y: RS.y + estimatedTorsoH, z: mz, visibility: 0.3 }
-      hipsVisible = true
-    }
-
-    const hasUsable = shouldersVisible && hipsVisible
-
-    if (!hasUsable) {
+    if (!shouldersVisible) {
       this.lostFrameCount++
       if (this.lostFrameCount <= this.lostFrameThreshold && this.lastValidLandmarks) {
         garmentModel.visible = true   // freeze at last position
@@ -85,38 +68,49 @@ export class VtoPoseEngine {
 
     this.lostFrameCount = 0
     garmentModel.visible = true
-    this.lastValidLandmarks = { LS, RS, LH: eLeftHip, RH: eRightHip }
 
-    // ── Position: torso center ──
+    // ═══ Calculate garment anchor point (softwear approach) ═══
     const shoulderMidX = (LS.x + RS.x) / 2
     const shoulderMidY = (LS.y + RS.y) / 2
-    const hipMidY      = (eLeftHip.y + eRightHip.y) / 1.8
-    const torsoCenterY = (shoulderMidY + hipMidY) / 2 - 0.05
-    const zOff         = (LS.z + RS.z) / 2
-
-    // DEBUG: Log BEFORE projection
-    const beforeProjection = { x: shoulderMidX, y: torsoCenterY, z: zOff }
-
-    this.targetPosition.set(shoulderMidX, torsoCenterY, zOff)
-    this._projectToWorld(this.targetPosition, camera)
+    const shoulderWidth = Math.abs(LS.x - RS.x)
     
-    // DEBUG: Log AFTER projection
-    if (Math.random() < 0.05) {
-      console.log(`[VtoPoseEngine] BEFORE project: x=${beforeProjection.x.toFixed(3)}, y=${beforeProjection.y.toFixed(3)}, z=${beforeProjection.z.toFixed(3)}`)
-      console.log(`[VtoPoseEngine] AFTER  project: x=${this.targetPosition.x.toFixed(3)}, y=${this.targetPosition.y.toFixed(3)}, z=${this.targetPosition.z.toFixed(3)}`)
-      console.log(`[VtoPoseEngine] Camera frustum: L=${camera.left.toFixed(2)} R=${camera.right.toFixed(2)} T=${camera.top.toFixed(2)} B=${camera.bottom.toFixed(2)}`)
+    // Try to use actual hips for better torso measurement
+    const hipsVisible = LH && RH &&
+      (LH.visibility ?? 1) > visThr && (RH.visibility ?? 1) > visThr
+    
+    let anchorY
+    let torsoHeight = 0
+    
+    if (hipsVisible) {
+      // Use real hip position
+      const hipMidY = (LH.y + RH.y) / 2
+      torsoHeight = hipMidY - shoulderMidY
+      
+      // Position garment at MID-CHEST (not collar!)
+      // Most 3D garment models have pivot at center/chest, not neckline
+      anchorY = shoulderMidY + (torsoHeight * 0.35)  // 35% down toward hips = chest level
+    } else {
+      // Estimate: use larger fixed offset to reach chest area
+      // In normalized space, chest is ~0.15-0.20 below shoulders
+      torsoHeight = shoulderWidth * 1.5
+      
+      // Anchor at chest level - use fixed offset in normalized coords
+      anchorY = shoulderMidY + 0.18  // Fixed offset to chest (was too small before)
     }
+    
+    const zOff = (LS.z + RS.z) / 2
 
-    // ── Scale: torso height drives garment size ──
-    this.shoulderMidpoint.set(shoulderMidX, shoulderMidY, zOff)
-    this.hipMidpoint.set(
-      (eLeftHip.x + eRightHip.x) / 2,
-      hipMidY,
-      (eLeftHip.z + eRightHip.z) / 2,
-    )
-    const torsoH = this.shoulderMidpoint.distanceTo(this.hipMidpoint)
-    const RATIO  = this.isMobile ? 1.8 : 2.7
-    const targetScaleVal = Math.max(0.5, Math.min(2.0, torsoH * RATIO))
+    this.targetPosition.set(shoulderMidX, anchorY, zOff)
+    this._projectToWorld(this.targetPosition, camera)
+
+    // ── Scale: based on torso dimensions (softwear approach) ──
+    // Primary reference: shoulder width (most stable)
+    // Secondary: torso height for aspect ratio
+    const SCALE_RATIO = this.isMobile ? 3.0 : 4.0
+    let targetScaleVal = shoulderWidth * SCALE_RATIO
+    
+    // Clamp to reasonable range
+    targetScaleVal = Math.max(0.6, Math.min(2.8, targetScaleVal))
 
     // ── Rotation: yaw from shoulder Z difference ──
     const shoulderZDiff = LS.z - RS.z
@@ -130,11 +124,6 @@ export class VtoPoseEngine {
     this.currentPosition.lerp(this.targetPosition, lerpF)
     this.currentScale.lerp(this.targetScale.set(targetScaleVal, targetScaleVal, targetScaleVal), lerpF)
     this.currentRotation.slerp(targetQuat, lerpF)
-
-    // DEBUG: Log FINAL applied transform
-    if (Math.random() < 0.05) {
-      console.log(`[VtoPoseEngine] FINAL applied: pos=(${this.currentPosition.x.toFixed(3)}, ${this.currentPosition.y.toFixed(3)}, ${this.currentPosition.z.toFixed(3)}) scale=${this.currentScale.x.toFixed(3)}`)
-    }
 
     garmentModel.position.copy(this.currentPosition)
     garmentModel.scale.copy(this.currentScale)
@@ -154,11 +143,6 @@ export class VtoPoseEngine {
 
     // Handle orthographic camera (used by AREngine)
     if (camera.isOrthographicCamera) {
-      // Store original values for debugging
-      const origX = vector.x
-      const origY = vector.y
-      const origZ = vector.z
-      
       // Map normalized [0,1] DIRECTLY to camera frustum bounds (NO extra scale)
       // MediaPipe: Y is 0 at top, 1 at bottom
       // Three.js: Y is +top at top, -1 at bottom
@@ -171,11 +155,6 @@ export class VtoPoseEngine {
       vector.y = -(vector.y - 0.5) * frustumHeight          // flip Y and scale to frustum
       vector.z = 0.5
       
-      if (Math.random() < 0.02) {
-        console.log(`[VtoPoseEngine._projectToWorld] In normalized: (${origX.toFixed(3)}, ${origY.toFixed(3)}, ${origZ.toFixed(3)})`)
-        console.log(`[VtoPoseEngine._projectToWorld] Out world: (${vector.x.toFixed(3)}, ${vector.y.toFixed(3)}, ${vector.z.toFixed(3)})`)
-        console.log(`[VtoPoseEngine._projectToWorld] Frustum W=${frustumWidth.toFixed(3)} H=${frustumHeight.toFixed(3)} → Y should be in [-1, +1]`)
-      }
       return
     }
 

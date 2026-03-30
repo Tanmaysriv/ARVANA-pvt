@@ -60,9 +60,6 @@ export class SMPLXBoneMapper {
     })
 
     this.initialized = Object.keys(this.boneMap).length > 0
-    if (this.initialized) {
-      console.log('[SMPLXBoneMapper] Bones found:', Object.keys(this.boneMap))
-    }
   }
 
   /**

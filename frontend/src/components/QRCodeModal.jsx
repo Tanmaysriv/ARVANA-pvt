@@ -81,7 +81,7 @@ const QRCodeModal = ({ isOpen, onClose, product }) => {
               <div className="flex-1">
                 <h3 className="font-semibold text-slate-900">{product.name}</h3>
                 <p className="text-sm text-slate-600">{product.brand || product.category}</p>
-                <p className="text-lg font-bold text-sky-600">${product.price}</p>
+                <p className="text-lg font-bold text-sky-600">₹{product.price.toLocaleString('en-IN')}</p>
               </div>
             </div>
           </div>

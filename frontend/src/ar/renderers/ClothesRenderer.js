@@ -109,7 +109,6 @@ export class ClothesRenderer {
 
         // Init bone mapper after model loads
         this.boneMapper.initBones(model)
-        console.log('[ClothesRenderer] Loaded:', path)
       },
       undefined,
       (err) => {

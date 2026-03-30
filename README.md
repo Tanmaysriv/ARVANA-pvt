@@ -1,384 +1,189 @@
-# ARVANA Backend API
+# 🛍️ ARVANA - AR Virtual Try-On E-Commerce Platform
 
-REST API server for the ARVANA AR Virtual Try-On e-commerce platform.
+<p align="center">
+  <img src="frontend/public/logo.png" alt="ARVANA Logo" width="200"/>
+</p>
 
-## Tech Stack
+<p align="center">
+  <strong>Experience products before you buy with Augmented Reality</strong>
+</p>
 
-- **Runtime:** Node.js (v22+)
-- **Framework:** Express 4.18
-- **Storage:** In-memory (Maps & Arrays)
-- **Modules:** ES Modules (`"type": "module"`)
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18.2-61DAFB?logo=react" alt="React"/>
+  <img src="https://img.shields.io/badge/Node.js-22+-339933?logo=node.js" alt="Node.js"/>
+  <img src="https://img.shields.io/badge/MongoDB-9.2-47A248?logo=mongodb" alt="MongoDB"/>
+  <img src="https://img.shields.io/badge/Three.js-0.159-000000?logo=three.js" alt="Three.js"/>
+  <img src="https://img.shields.io/badge/TensorFlow.js-4.2-FF6F00?logo=tensorflow" alt="TensorFlow"/>
+</p>
 
-## Getting Started
+---
 
-### 1. Install Dependencies
+## 🌟 Overview
+
+**ARVANA** is a full-stack AR-powered e-commerce platform that lets customers virtually try on products using their camera before purchasing. The platform supports multiple product categories including shoes, bags, clothes, watches, and jewelry with real-time body tracking and 3D visualization.
+
+### ✨ Key Highlights
+
+- 🎯 **Real-time AR Try-On** - Try shoes, watches, clothes on your body using webcam
+- 🏪 **Multi-Seller Marketplace** - Sellers can register, list products, and manage orders
+- 💳 **Indian Payment Integration** - UPI, WhatsApp payments with QR code support
+- 🤖 **AI-Powered Body Tracking** - MediaPipe + TensorFlow.js for accurate pose detection
+- 🎨 **Dynamic 3D Models** - Procedural model generation without pre-made assets
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js v22+
+- MongoDB (local or Atlas)
+- npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/ARVANA-pvt.git
+cd ARVANA-pvt
+
+# Install backend dependencies
 cd backend
+npm install
+
+# Install frontend dependencies
+cd ../frontend
 npm install
 ```
 
-### 2. Configure Environment
+### Configuration
 
-Create a `.env` file (or use the existing one):
+Create `.env` file in the `backend` folder:
 
 ```env
 PORT=5000
 NODE_ENV=development
+MONGODB_URI=mongodb://localhost:27017/arvana
+JWT_SECRET=your-secret-key
 ```
 
-### 3. Start the Server
+### Running the Application
 
 ```bash
-# Production
-npm start
+# Terminal 1: Start Backend
+cd backend
+npm run dev
 
-# Development (auto-restart on file changes)
+# Terminal 2: Start Frontend
+cd frontend
 npm run dev
 ```
 
-The server will start at **http://localhost:5000**
+Visit **http://localhost:5173** to access the application.
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-backend/
-├── .env                 # Environment variables
-├── package.json         # Dependencies & scripts
-├── server.js            # Express app entry point
-├── data/
-│   ├── products.js      # Seed data: 12 products + 5 categories
-│   └── reviews.js       # Seed data: 5 reviews
-└── routes/
-    ├── products.js      # Product listing & details
-    ├── categories.js    # Category listing
-    ├── cart.js           # Cart CRUD operations
-    ├── wishlist.js       # Wishlist CRUD operations
-    ├── orders.js         # Order placement & history
-    ├── newsletter.js     # Email subscription
-    └── reviews.js        # Product reviews
-```
-
----
-
-## API Reference
-
-Base URL: `http://localhost:5000/api`
-
-### Health Check
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/health` | Server status & timestamp |
-
----
-
-### Products
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/products` | List all products |
-| GET | `/api/products/:id` | Get a single product |
-
-**Query Parameters** for `GET /api/products`:
-
-| Param | Type | Description |
-|-------|------|-------------|
-| `category` | string | Filter by category (`shoes`, `bags`, `clothes`, `watches`) |
-| `search` | string | Search by name, brand, or description |
-| `sort` | string | Sort order: `price-low`, `price-high`, `rating`, `discount` |
-| `minPrice` | number | Minimum price filter |
-| `maxPrice` | number | Maximum price filter |
-
-**Example:**
-```
-GET /api/products?category=shoes&sort=price-low&minPrice=50&maxPrice=200
+ARVANA-pvt/
+├── backend/                 # Node.js + Express + MongoDB
+│   ├── models/             # Mongoose schemas (User, Product, Order, etc.)
+│   ├── routes/             # API endpoints
+│   ├── middleware/         # Auth, authorization middleware
+│   ├── db/                 # Database connection & seeding
+│   └── uploads/            # Product images
+│
+├── frontend/               # React + Vite + Three.js
+│   ├── src/
+│   │   ├── components/     # UI components & pages
+│   │   ├── ar/             # AR Engine, trackers, renderers
+│   │   ├── services/       # API client, model generation
+│   │   ├── context/        # Auth, Cart, Theme contexts
+│   │   └── hooks/          # Custom React hooks
+│   └── public/             # Static assets
+│
+└── package.json            # Monorepo scripts
 ```
 
 ---
 
-### Categories
+## 🛠️ Tech Stack
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/categories` | List all categories |
+### Frontend
+| Technology | Purpose |
+|------------|---------|
+| React 18.2 | UI Framework |
+| Vite 5.0 | Build Tool |
+| Three.js | 3D Rendering |
+| TensorFlow.js | ML/AI |
+| MediaPipe | Pose Detection |
+| Tailwind CSS | Styling |
+| Framer Motion | Animations |
+
+### Backend
+| Technology | Purpose |
+|------------|---------|
+| Node.js | Runtime |
+| Express 4.18 | Web Framework |
+| MongoDB + Mongoose | Database |
+| JWT | Authentication |
+| Multer | File Uploads |
+| bcryptjs | Password Hashing |
 
 ---
 
-### Cart
+## 👥 User Roles
 
-All cart endpoints use `userId` to identify the user (defaults to `"guest"`).
+| Role | Capabilities |
+|------|-------------|
+| **Customer** | Browse, try AR, cart, wishlist, orders, reviews |
+| **Seller** | Product management, order fulfillment, dashboard |
+| **Admin** | Full platform control, seller approval, analytics |
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/cart?userId=xxx` | Get cart contents |
-| POST | `/api/cart` | Add item to cart |
-| PUT | `/api/cart/:itemId` | Update item quantity |
-| DELETE | `/api/cart/:itemId` | Remove item from cart |
-| DELETE | `/api/cart?userId=xxx` | Clear entire cart |
+---
 
-**POST Body:**
-```json
-{
-  "productId": 1,
-  "quantity": 2,
-  "userId": "guest"
-}
+## 💳 Payment Methods
+
+- 💵 **Cash on Delivery (COD)**
+- 💳 **Credit/Debit Cards**
+- 📱 **UPI Payments**
+- 💬 **WhatsApp + Manual Payment**
+
+---
+
+## 📖 Documentation
+
+For detailed documentation, see:
+
+- **[PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)** - Complete technical documentation with workflow diagrams
+
+---
+
+## 🎯 Demo Accounts
+
 ```
-
----
-
-### Wishlist
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/wishlist?userId=xxx` | Get wishlist |
-| POST | `/api/wishlist` | Add item to wishlist |
-| DELETE | `/api/wishlist/:productId` | Remove from wishlist |
-
-**POST Body:**
-```json
-{
-  "productId": 1,
-  "userId": "guest"
-}
-```
-
----
-
-### Orders
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/orders` | Place a new order |
-| GET | `/api/orders?userId=xxx` | Get order history |
-| GET | `/api/orders/:id` | Get single order by ID or order number |
-
-**POST Body:**
-```json
-{
-  "userId": "guest",
-  "items": [
-    { "productId": 1, "name": "Nike Air Max 270", "price": 129.99, "quantity": 1 }
-  ],
-  "shippingAddress": {
-    "street": "123 Main St",
-    "city": "New York",
-    "zip": "10001"
-  },
-  "paymentMethod": "card"
-}
-```
-
-> Free shipping on orders ≥ $50. Otherwise, $5.99 shipping fee.
-
----
-
-### Newsletter
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/newsletter` | Subscribe to newsletter |
-| GET | `/api/newsletter/subscribers` | List all subscribers (admin) |
-
-**POST Body:**
-```json
-{
-  "email": "user@example.com"
-}
+Customer: customer@test.com / password123
+Seller:   maihu@gmail.com / password123
+Admin:    admin@arvana.com / admin123
 ```
 
 ---
 
-### Reviews
+## 📄 License
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/reviews` | List all reviews |
-| GET | `/api/reviews?productId=1` | Reviews for a specific product |
-| POST | `/api/reviews` | Submit a new review |
-
-**POST Body:**
-```json
-{
-  "productId": 1,
-  "userName": "John D.",
-  "rating": 5,
-  "comment": "Great product!"
-}
-```
+MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-## Data Models
+## 🙏 Acknowledgments
 
-### Product
-```
-id            number       Unique identifier
-name          string       Product name
-brand         string       Brand name
-category      string       "shoes" | "bags" | "clothes" | "watches"
-price         number       Current price
-originalPrice number       Price before discount
-rating        number       Average rating (1-5)
-reviewCount   number       Total number of reviews
-image         string       Image URL
-description   string       Product description
-colors        string[]     Available colors
-sizes         string[]     Available sizes
-badge         string|null  "Bestseller", "New", "Sale", "Trending", or null
-inStock       boolean      Availability status
-```
-
-### Cart Item
-```
-id            uuid         Cart item ID
-productId     number       Reference to product
-name          string       Product name
-brand         string       Brand name
-price         number       Unit price
-originalPrice number       Original price
-image         string       Image URL
-category      string       Product category
-quantity      number       Item quantity
-```
-
-### Order
-```
-id                uuid       Order ID
-orderNumber       string     "ARV-XXXXXXXX"
-userId            string     User identifier
-items             array      Ordered items
-subtotal          number     Items total
-shipping          number     Shipping cost (0 if subtotal ≥ 50)
-total             number     Final total
-shippingAddress   object     Delivery address
-paymentMethod     string     Payment method
-status            string     "confirmed"
-createdAt         ISO date   Order timestamp
-estimatedDelivery ISO date   Expected delivery (+3 days)
-```
-
-### Review
-```
-id            number       Unique identifier
-productId     number       Reference to product
-userName      string       Reviewer name
-rating        number       Rating (1-5)
-comment       string       Review text
-verified      boolean      Verified purchase flag
-date          string       "YYYY-MM-DD"
-avatar        string       Avatar image URL
-```
+- MediaPipe by Google
+- Three.js Community
+- TensorFlow.js Team
 
 ---
 
-## Seed Data
-
-The server comes pre-loaded with:
-
-- **12 Products** — 3 shoes, 3 bags, 3 clothes, 3 watches
-- **5 Categories** — Footwear, Bags, Watches, Jewellery, Clothes
-- **5 Reviews** — Sample verified reviews
-
----
-
-## 3D Model Generation System
-
-The ARVANA platform features an **instant procedural 3D model generation system** that automatically creates 3D models for any product without requiring pre-made GLB files.
-
-### How It Works
-
-When a seller adds a new product with a category, the system:
-1. Detects the product category (shoes, bags, clothes, etc.)
-2. Selects the appropriate generic 3D model
-3. Applies the product's color to the model
-4. Displays it instantly in the 3D viewer
-
-**No external API calls or file uploads needed** — Models are generated on-demand using Three.js procedural geometry.
-
-### Supported Categories
-
-| Category | Models Generated For |
-|----------|----------------------|
-| `shoes` | Sneakers, boots, sandals, running shoes |
-| `bags` | Backpacks, tote bags, crossbody bags, purses |
-| `clothes` | T-shirts, jackets, dresses, coats, jeans |
-| `watches` | Smartwatches, analog watches, digital watches |
-| `accessories` | Jewelry, belts, scarves, hats |
-| `jewelry` | Rings, necklaces, bracelets, earrings |
-
-### Supported Colors
-
-**Color Names:** Black, White, Red, Blue, Navy, Gray, Brown, Tan, Silver, Gold, Rose Gold, Light Blue, Pink, Purple, Orange, Yellow, Green, Dark Green, Beige, Cream
-
-**Or use Hex codes:** `#FF5733`
-
-### Product Requirements
-
-For automatic 3D generation, products must include:
-
-```json
-{
-  "id": 50,
-  "name": "Premium Hiking Backpack",
-  "category": "bags",        // ← Required: Must match supported categories
-  "colors": ["Black", "Navy"], // ← Required: Array of color names or hex codes
-  "price": 4999,
-  // ... other fields
-}
-```
-
-### Frontend Components
-
-**Files Involved:**
-
-| File | Purpose |
-|------|---------|
-| `frontend/src/services/modelGenerator.jsx` | Core model components (6 generic models) |
-| `frontend/src/utils/modelUtils.js` | Color conversion & utility functions |
-| `frontend/src/components/Product3DViewer.jsx` | 3D viewer wrapper (handles both predefined & dynamic) |
-| `frontend/src/examples/ModelGenerationExamples.jsx` | Working code examples |
-
-### Performance
-
-- **Generation:** ~5ms per model
-- **Color change:** <1ms
-- **Memory:** ~1-2MB per model
-- **API calls:** Zero (client-side only)
-- **Works offline:** ✅ Yes
-
-### Documentation
-
-Full documentation available in:
-- `DYNAMIC_MODEL_GENERATION.md` — Technical deep dive
-- `SELLER_3D_INTEGRATION.md` — Integrating with seller dashboard
-- `IMPLEMENTATION_SUMMARY.md` — Quick reference
-
----
-
-## Important Notes
-
-- **In-memory storage** — All data (cart, wishlist, orders, subscribers) resets when the server restarts.
-- **No authentication** — `userId` is passed as a parameter; there is no token-based auth.
-- **No database** — Ready to be upgraded to MongoDB, PostgreSQL, etc.
-- **CORS enabled** — Accepts requests from any origin.
-- **Frontend proxy** — The Vite dev server proxies `/api` requests to this backend on port 5000.
-- **3D Models** — Automatically generated for all new products; requires valid `category` field.
-
----
-
-## Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start the server |
-| `npm run dev` | Start with auto-reload (`--watch`) |
-
----
-
-## License
-
-MIT
+<p align="center">
+  Made with ❤️ by ARVANA Team
+</p>

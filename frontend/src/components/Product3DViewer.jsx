@@ -277,7 +277,7 @@ const Product3DViewer = ({ product, isOpen, onClose }) => {
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-6">
             <div className="flex items-center justify-between">
               <div className="text-white">
-                <p className="text-3xl font-bold text-primary-400">${product.price}</p>
+                <p className="text-3xl font-bold text-primary-400">₹{product.price.toLocaleString('en-IN')}</p>
                 <div className="flex items-center space-x-4 mt-2">
                   <p className="text-sm text-gray-300">
                     🖱️ Drag to rotate

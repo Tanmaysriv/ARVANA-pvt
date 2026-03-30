@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Camera, Heart, Box, QrCode, ShoppingCart, Star, ShoppingBag, Eye } from 'lucide-react'
+import { Camera, Heart, Box, QrCode, ShoppingCart, ShoppingBag, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useProducts, useCategories } from '../hooks/useProducts'
 import { useCart } from '../context/CartContext'

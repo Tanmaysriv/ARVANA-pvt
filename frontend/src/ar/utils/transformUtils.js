@@ -72,11 +72,6 @@ export function getWatchTransform(handLandmarks, videoWidth = 1280, videoHeight 
   // For left hand, mirror the rotation
   const finalRotZ = handedness === 'Left' ? rotZ + Math.PI : rotZ
 
-  // Debug logging (remove in production)
-  if (Math.random() < 0.05) {  // 5% sample rate to avoid spam
-    console.log(`[Watch] hand=${handedness}, pos=(${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}), scale=${watchScale.toFixed(3)}, aspect=${aspect.toFixed(2)}`)
-  }
-
   return {
     position: new THREE.Vector3(pos.x, pos.y, 0),
     rotation: new THREE.Euler(0, 0, finalRotZ),
@@ -216,11 +211,6 @@ export function getClothesTransform(poseLandmarks, videoWidth = 1280, videoHeigh
 
   // Scale.x = shoulder half-width in ortho space (used by ClothesRenderer to calibrate GLB)
   const scaleX = swNorm * 2 * aspect * 0.55
-
-  // Debug logging
-  if (Math.random() < 0.05) {
-    console.log(`[Clothes] pos=(${pos.x.toFixed(2)}, ${pos.y.toFixed(2)}), scale=${scaleX.toFixed(3)}, shoulderVis=(${(ls.visibility ?? 1).toFixed(2)}, ${(rs.visibility ?? 1).toFixed(2)})`)
-  }
 
   return {
     position: new THREE.Vector3(pos.x, pos.y, 0),
