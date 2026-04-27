@@ -67,12 +67,26 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  stock: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
   inStock: {
     type: Boolean,
     default: true
   }
 }, {
   timestamps: true
+})
+
+// Auto-derive inStock from stock count before every save
+productSchema.pre('save', function () {
+  // Ensure stock is a number and >= 0
+  if (typeof this.stock !== 'number' || this.stock < 0) {
+    this.stock = 0
+  }
+  this.inStock = this.stock > 0
 })
 
 // Text index for search

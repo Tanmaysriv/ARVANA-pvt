@@ -25,6 +25,20 @@ router.post('/', async (req, res) => {
     const shipping = subtotal >= 999 ? 0 : 99
     const total = Math.round(subtotal + shipping)
 
+    // ── Stock validation (before creating the order) ──
+    for (const item of items) {
+      const pid = parseInt(item.productId)
+      if (!pid) continue
+      const product = await Product.findOne({ productId: pid }).select('name stock inStock').lean()
+      if (!product) continue
+      if (!product.inStock || product.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          error: `"${item.name}" is out of stock or has insufficient quantity (available: ${product.stock ?? 0})`,
+        })
+      }
+    }
+
     // Look up sellers for each item from the Product collection
     const productIds = items.map(i => parseInt(i.productId)).filter(Boolean)
     const products = await Product.find({ productId: { $in: productIds } }).select('productId seller').lean()
@@ -54,6 +68,24 @@ router.post('/', async (req, res) => {
       status: 'pending',
       estimatedDelivery: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
     })
+
+    // ── Atomic stock deduction (after order created) ──
+    await Promise.all(
+      items.map(item => {
+        const pid = parseInt(item.productId)
+        if (!pid) return Promise.resolve()
+        return Product.findOneAndUpdate(
+          { productId: pid },
+          { $inc: { stock: -item.quantity } },
+          { new: true }
+        ).then(updated => {
+          // Sync inStock flag
+          if (updated) {
+            return Product.findByIdAndUpdate(updated._id, { inStock: updated.stock > 0 })
+          }
+        })
+      })
+    )
 
     res.status(201).json({
       success: true,
@@ -135,6 +167,23 @@ router.patch('/:id/cancel', async (req, res) => {
     order.status = 'cancelled'
     order.cancelledAt = new Date()
     await order.save()
+
+    // ── Restore stock for each cancelled item ──
+    await Promise.all(
+      order.items.map(item => {
+        const pid = parseInt(item.productId)
+        if (!pid) return Promise.resolve()
+        return Product.findOneAndUpdate(
+          { productId: pid },
+          { $inc: { stock: item.quantity } },
+          { new: true }
+        ).then(updated => {
+          if (updated) {
+            return Product.findByIdAndUpdate(updated._id, { inStock: updated.stock > 0 })
+          }
+        })
+      })
+    )
 
     res.json({
       success: true,

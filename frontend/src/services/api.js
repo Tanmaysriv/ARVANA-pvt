@@ -335,6 +335,22 @@ const api = {
     // Categories (read-only)
     getCategories: () => safeFetch(`${API_BASE}/seller/categories`),
   },
+
+  // ─── Razorpay Payment ──────────────────────────
+  createRazorpayOrder: (orderId) =>
+    safeFetch(`${API_BASE}/payment/create-order`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId }),
+    }),
+
+  verifyRazorpayPayment: (data) =>
+    safeFetch(`${API_BASE}/payment/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }),
 }
+
 
 export default api

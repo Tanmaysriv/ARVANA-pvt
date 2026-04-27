@@ -144,7 +144,8 @@ router.put('/products/:id', async (req, res) => {
 
     res.json({ success: true, data: product })
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message })
+    console.error('PUT /products/:id error:', error)
+    res.status(500).json({ success: false, error: error.message, stack: error.stack })
   }
 })
 

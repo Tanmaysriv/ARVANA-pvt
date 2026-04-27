@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ChevronLeft, MapPin, CreditCard, Truck, ShieldCheck, CheckCircle2, MessageCircle } from 'lucide-react'
+import { ChevronLeft, MapPin, CreditCard, Truck, ShieldCheck, CheckCircle2, MessageCircle, Zap } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
@@ -26,6 +26,8 @@ const Checkout = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [orderPlaced, setOrderPlaced] = useState(null)
+  const [locLoading, setLocLoading] = useState(false)
+  const [locError, setLocError]   = useState('')
 
   // Address form — pre-fill from saved profile address
   const [address, setAddress] = useState({
@@ -43,6 +45,57 @@ const Checkout = () => {
   const subtotal = getCartTotal()
   const shipping = subtotal >= 999 ? 0 : 99
   const total = subtotal + shipping
+
+  // Dynamically load Razorpay checkout script
+  useEffect(() => {
+    if (document.getElementById('razorpay-script')) return
+    const script = document.createElement('script')
+    script.id  = 'razorpay-script'
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    script.async = true
+    document.body.appendChild(script)
+  }, [])
+
+  // ── Location auto-detect via browser Geolocation + Nominatim reverse geocode ──
+  const detectLocation = () => {
+    setLocError('')
+    if (!navigator.geolocation) {
+      setLocError('Geolocation is not supported by your browser')
+      return
+    }
+    setLocLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+            { headers: { 'Accept-Language': 'en' } }
+          )
+          const data = await res.json()
+          const addr = data.address || {}
+          setAddress(prev => ({
+            ...prev,
+            city:    addr.city || addr.town || addr.village || addr.county || prev.city,
+            state:   addr.state  || prev.state,
+            pincode: addr.postcode || prev.pincode,
+            country: addr.country || 'India',
+          }))
+        } catch {
+          setLocError('Could not fetch location details. Fill manually.')
+        } finally {
+          setLocLoading(false)
+        }
+      },
+      (err) => {
+        setLocLoading(false)
+        if (err.code === 1) setLocError('Location access denied. Please allow in browser settings.')
+        else if (err.code === 2) setLocError('Location unavailable. Try again or fill manually.')
+        else setLocError('Location request timed out. Fill manually.')
+      },
+      { timeout: 10000, maximumAge: 60000 }
+    )
+  }
 
   // Redirect if not logged in
   if (!isAuthenticated) {
@@ -120,6 +173,7 @@ const Checkout = () => {
         quantity: item.quantity,
       }))
 
+      // 1. Create the ARVANA order first
       const res = await api.placeOrder({
         items: orderItems,
         shippingAddress: {
@@ -134,53 +188,100 @@ const Checkout = () => {
         paymentMethod,
       })
 
-      if (res.success) {
-        setOrderPlaced(res.data)
-        clearCart()
-        setStep(3)
-
-        // If WhatsApp payment selected, open WhatsApp with detailed payment instructions
-        if (paymentMethod === 'whatsapp') {
-          const itemsList = cartItems.map(item => `• ${item.name} x${item.quantity} — Rs.${(item.price * item.quantity).toLocaleString('en-IN')}`).join('\n')
-          
-          const msg = `*ARVANA Order #${res.data.orderNumber}*\n\n` +
-            `${itemsList}\n\n` +
-            `*Order Summary:*\n` +
-            `Subtotal: Rs.${subtotal.toLocaleString('en-IN')}\n` +
-            `Shipping: ${shipping === 0 ? 'FREE' : `Rs.${shipping}`}\n` +
-            `-------------------------\n` +
-            `*Total: Rs.${res.data.total.toLocaleString('en-IN')}*\n\n` +
-            `*Delivery Address:*\n` +
-            `${address.fullName}\n` +
-            `${address.street}\n` +
-            `${address.city}, ${address.state} - ${address.pincode}\n` +
-            `Phone: ${address.phone}\n\n` +
-            `-------------------------\n\n` +
-            `*PAYMENT OPTIONS:*\n\n` +
-            `*Option 1: UPI Payment (Recommended)*\n` +
-            `UPI ID: ${PAYMENT_CONFIG.upiId}\n` +
-            `Copy the UPI ID and pay via any UPI app\n\n` +
-            `*Option 2: Scan QR Code*\n` +
-            `View QR: ${window.location.origin}/payment-qr.jpg\n` +
-            `Scan & pay using Google Pay, PhonePe, Paytm\n\n` +
-            `*Option 3: Bank Transfer*\n` +
-            `Bank: ${PAYMENT_CONFIG.bankName}\n` +
-            `Name: ${PAYMENT_CONFIG.accountName}\n\n` +
-            `-------------------------\n\n` +
-            `*After Payment:*\n` +
-            `1. Take a screenshot of payment\n` +
-            `2. Send it to this number\n` +
-            `3. We'll confirm your order immediately!\n\n` +
-            `*Delivery:* 3-5 business days\n` +
-            `*Support:* Reply to this message for any queries\n\n` +
-            `Thank you for shopping with ARVANA!`
-          
-          const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`
-          // Small delay so user sees the confirmation screen first
-          setTimeout(() => window.open(waUrl, '_blank'), 1200)
-        }
-      } else {
+      if (!res.success) {
         setError(res.error || 'Failed to place order')
+        setLoading(false)
+        return
+      }
+
+      const placedOrder = res.data
+
+      // 2. Razorpay online payment flow
+      if (paymentMethod === 'razorpay') {
+        // Create Razorpay order on backend
+        const rzpRes = await api.createRazorpayOrder(placedOrder._id)
+        if (!rzpRes.success) {
+          setError('Could not initiate payment. Please try another method.')
+          setLoading(false)
+          return
+        }
+
+        const { razorpayOrderId, amount, currency, keyId, prefill, orderNumber } = rzpRes.data
+
+        if (!window.Razorpay) {
+          setError('Razorpay failed to load. Please refresh and try again.')
+          setLoading(false)
+          return
+        }
+
+        const rzp = new window.Razorpay({
+          key:         keyId,
+          amount,
+          currency,
+          name:        'ARVANA',
+          description: `Order #${orderNumber}`,
+          order_id:    razorpayOrderId,
+          prefill,
+          theme:       { color: '#6366f1' },
+          handler: async (response) => {
+            try {
+              // 3. Verify payment on backend
+              const verifyRes = await api.verifyRazorpayPayment({
+                razorpayOrderId:  response.razorpay_order_id,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpaySignature: response.razorpay_signature,
+                orderId:          placedOrder._id,
+              })
+
+              if (verifyRes.success) {
+                setOrderPlaced(verifyRes.data)
+                clearCart()
+                setStep(3)
+              } else {
+                setError('Payment verification failed. Contact support.')
+              }
+            } catch (e) {
+              setError('Payment verification error: ' + e.message)
+            }
+            setLoading(false)
+          },
+          modal: {
+            ondismiss: () => {
+              setError('Payment cancelled. Your order is saved — complete payment to confirm.')
+              setLoading(false)
+            },
+          },
+        })
+
+        rzp.open()
+        // Don't setLoading(false) here — handler / ondismiss will do it
+        return
+      }
+
+      // 3. Non-Razorpay flow (COD / WhatsApp)
+      setOrderPlaced(placedOrder)
+      clearCart()
+      setStep(3)
+
+      if (paymentMethod === 'whatsapp') {
+        const itemsList = cartItems.map(item => `• ${item.name} x${item.quantity} — Rs.${(item.price * item.quantity).toLocaleString('en-IN')}`).join('\n')
+        const msg = `*ARVANA Order #${placedOrder.orderNumber}*\n\n` +
+          `${itemsList}\n\n` +
+          `*Order Summary:*\n` +
+          `Subtotal: Rs.${subtotal.toLocaleString('en-IN')}\n` +
+          `Shipping: ${shipping === 0 ? 'FREE' : `Rs.${shipping}`}\n` +
+          `-------------------------\n` +
+          `*Total: Rs.${placedOrder.total.toLocaleString('en-IN')}*\n\n` +
+          `*Delivery Address:*\n` +
+          `${address.fullName}\n` +
+          `${address.street}\n` +
+          `${address.city}, ${address.state} - ${address.pincode}\n` +
+          `Phone: ${address.phone}\n\n` +
+          `*PAYMENT OPTIONS:*\n` +
+          `UPI ID: ${PAYMENT_CONFIG.upiId}\n\n` +
+          `After payment, send screenshot to confirm!\n\n` +
+          `Thank you for shopping with ARVANA!`
+        setTimeout(() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank'), 1200)
       }
     } catch (err) {
       setError(err.message || 'Something went wrong')
@@ -202,7 +303,7 @@ const Checkout = () => {
             <CheckCircle2 className={`w-10 h-10 ${orderPlaced.paymentMethod === 'whatsapp' ? 'text-amber-600' : 'text-emerald-600'}`} />
           </div>
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">
-            {orderPlaced.paymentMethod === 'whatsapp' ? 'Order Placed!' : 'Order Confirmed!'}
+            {orderPlaced.paymentMethod === 'razorpay' ? '🎉 Payment Successful!' : orderPlaced.paymentMethod === 'whatsapp' ? 'Order Placed!' : 'Order Confirmed!'}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mb-1">
             Order Number: <span className="font-semibold text-sky-600">{orderPlaced.orderNumber}</span>
@@ -210,6 +311,11 @@ const Checkout = () => {
           {orderPlaced.paymentMethod === 'whatsapp' && (
             <p className="text-amber-600 dark:text-amber-400 font-semibold text-sm mb-2">
               ⏳ Awaiting Payment Confirmation
+            </p>
+          )}
+          {orderPlaced.paymentMethod === 'razorpay' && (
+            <p className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm mb-2">
+              ✓ Payment received — your order is confirmed!
             </p>
           )}
           <p className="text-slate-500 dark:text-slate-400 mb-8">
@@ -417,6 +523,29 @@ const Checkout = () => {
                   Delivery Address
                 </h2>
 
+                {/* Location detect button */}
+                <div className="mb-4">
+                  <button
+                    type="button"
+                    onClick={detectLocation}
+                    disabled={locLoading}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-sky-50 dark:bg-sky-900/20 border border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 rounded-xl text-sm font-semibold hover:bg-sky-100 dark:hover:bg-sky-800/30 transition-colors disabled:opacity-60"
+                  >
+                    {locLoading ? (
+                      <div className="w-4 h-4 border-2 border-sky-400 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <MapPin className="w-4 h-4" />
+                    )}
+                    {locLoading ? 'Detecting...' : '📍 Detect my location'}
+                  </button>
+                  {locError && (
+                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1.5 ml-1">{locError}</p>
+                  )}
+                  {!locError && !locLoading && address.city && (
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 ml-1">✓ Location auto-filled — review and confirm below</p>
+                  )}
+                </div>
+
                 {error && (
                   <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-600 dark:text-red-400">
                     {error}
@@ -515,8 +644,9 @@ const Checkout = () => {
 
                 <div className="space-y-3 mb-6">
                   {[
-                    { value: 'cod', label: 'Cash on Delivery', desc: 'Pay when your order arrives', icon: '💰' },
-                    { value: 'whatsapp', label: 'Pay via WhatsApp', desc: 'Quick UPI / bank transfer via WhatsApp', icon: '💬' },
+                    { value: 'razorpay', label: 'Pay Online', desc: 'Cards, UPI, Net Banking, Wallets via Razorpay', icon: '💳', badge: 'Recommended' },
+                    { value: 'cod', label: 'Cash on Delivery', desc: 'Pay when your order arrives', icon: '💰', badge: null },
+                    { value: 'whatsapp', label: 'Pay via WhatsApp', desc: 'Quick UPI / bank transfer via WhatsApp', icon: '💬', badge: null },
                   ].map(opt => (
                     <label
                       key={opt.value}
@@ -536,7 +666,14 @@ const Checkout = () => {
                       />
                       <span className="text-2xl">{opt.icon}</span>
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-800 dark:text-white">{opt.label}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-800 dark:text-white">{opt.label}</p>
+                          {opt.badge && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300">
+                              {opt.badge}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">{opt.desc}</p>
                       </div>
                       <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
@@ -547,6 +684,16 @@ const Checkout = () => {
                     </label>
                   ))}
                 </div>
+
+                {/* Razorpay info */}
+                {paymentMethod === 'razorpay' && (
+                  <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-700 rounded-xl flex items-start gap-3">
+                    <Zap className="w-4 h-4 text-indigo-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-indigo-700 dark:text-indigo-300">
+                      You'll be redirected to Razorpay's secure payment page. Supports all cards, UPI (GPay, PhonePe, Paytm), Net Banking and wallets. 100% secure.
+                    </p>
+                  </div>
+                )}
 
                 {/* Delivery address summary */}
                 <div className="bg-slate-50 dark:bg-slate-700/50 rounded-xl p-4 mb-6">
@@ -573,6 +720,8 @@ const Checkout = () => {
                   >
                     {loading ? (
                       <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : paymentMethod === 'razorpay' ? (
+                      `Pay Online — ₹${total.toLocaleString('en-IN')}`
                     ) : (
                       `Place Order — ₹${total.toLocaleString('en-IN')}`
                     )}

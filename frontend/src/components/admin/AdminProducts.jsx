@@ -6,7 +6,7 @@ import api from '../../services/api'
 const emptyProduct = {
   name: '', brand: '', category: 'shoes', price: '', originalPrice: '',
   description: '', image: '', rating: 0, reviewCount: 0,
-  colors: '', sizes: '', badge: '', inStock: true,
+  colors: '', sizes: '', badge: '', stock: 0,
 }
 
 const categories = ['shoes', 'bags', 'clothes', 'watches']
@@ -61,7 +61,7 @@ const AdminProducts = () => {
       colors: (product.colors || []).join(', '),
       sizes: (product.sizes || []).join(', '),
       badge: product.badge || '',
-      inStock: product.inStock !== false,
+      stock: product.stock || 0,
     })
     setError('')
     setImageMode(product.image ? 'url' : 'upload')
@@ -118,7 +118,7 @@ const AdminProducts = () => {
         colors: form.colors ? form.colors.split(',').map(c => c.trim()).filter(Boolean) : [],
         sizes: form.sizes ? form.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
         badge: form.badge.trim() || null,
-        inStock: form.inStock,
+        stock: Math.max(0, Number(form.stock) || 0),
       }
 
       if (editing) {
@@ -204,11 +204,16 @@ const AdminProducts = () => {
                     {product.badge}
                   </span>
                 )}
-                {!product.inStock && (
+                {product.stock <= 0 && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <span className="text-white text-sm font-bold">Out of Stock</span>
                   </div>
                 )}
+                <div className="absolute bottom-2 right-2 bg-black/70 px-2 py-1 rounded-lg">
+                  <p className="text-xs text-white font-semibold">
+                    📦 {product.stock || 0} in stock
+                  </p>
+                </div>
               </div>
               <div className="p-4">
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">{product.brand}</p>
@@ -220,7 +225,18 @@ const AdminProducts = () => {
                   )}
                 </div>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-xs text-slate-500 capitalize">{product.category}</span>
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs text-slate-500 capitalize">{product.category}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold ${
+                        product.stock > 20 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
+                        product.stock > 0 ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                        'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                      }`}>
+                        {product.stock > 0 ? `${product.stock} left` : 'Out of stock'}
+                      </span>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => openEdit(product)}
@@ -410,12 +426,10 @@ const AdminProducts = () => {
                     <input type="number" min="0" max="5" step="0.1" value={form.rating} onChange={e => setForm(f => ({ ...f, rating: e.target.value }))}
                       className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
                   </div>
-                  <div className="flex items-end pb-1">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" checked={form.inStock} onChange={e => setForm(f => ({ ...f, inStock: e.target.checked }))}
-                        className="w-4 h-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500" />
-                      <span className="text-sm font-medium text-slate-700 dark:text-slate-300">In Stock</span>
-                    </label>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">Stock Quantity</label>
+                    <input type="number" min="0" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} placeholder="50"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 outline-none" />
                   </div>
                 </div>
               </div>

@@ -255,6 +255,15 @@ const ProductDetail = ({ onTryOn }) => {
                   </div>
                 )}
 
+                {/* Out of Stock overlay */}
+                {!product.inStock && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-2xl">
+                    <span className="text-white font-bold text-xl tracking-wide bg-red-600 px-6 py-2 rounded-xl shadow-lg">
+                      Out of Stock
+                    </span>
+                  </div>
+                )}
+
                 {/* Wishlist */}
                 <button
                   onClick={() => toggleWishlistItem(product)}
@@ -463,24 +472,33 @@ const ProductDetail = ({ onTryOn }) => {
 
             {/* Add to Cart / Buy Now */}
             <div className="flex gap-3 pt-1">
-              <button
-                onClick={handleAddToCart}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
-                  isInCart(product.id)
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-300 dark:border-emerald-700'
-                    : 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 border-2 border-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20'
-                }`}
-              >
-                <ShoppingCart className="w-5 h-5" />
-                {isInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}
-              </button>
-              <button
-                onClick={handleBuyNow}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm bg-sky-600 text-white hover:bg-sky-700 transition-all shadow-lg"
-              >
-                <ShoppingBag className="w-5 h-5" />
-                Buy Now
-              </button>
+              {product.inStock ? (
+                <>
+                  <button
+                    onClick={handleAddToCart}
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all ${
+                      isInCart(product.id)
+                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-300 dark:border-emerald-700'
+                        : 'bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 border-2 border-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/20'
+                    }`}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    {isInCart(product.id) ? 'Added to Cart' : 'Add to Cart'}
+                  </button>
+                  <button
+                    onClick={handleBuyNow}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm bg-sky-600 text-white hover:bg-sky-700 transition-all shadow-lg"
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    Buy Now
+                  </button>
+                </>
+              ) : (
+                <div className="flex-1 flex items-center justify-center gap-3 py-4 rounded-xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800">
+                  <span className="text-red-600 dark:text-red-400 font-bold text-base">❌ Out of Stock</span>
+                  <span className="text-red-500 dark:text-red-400 text-sm">Currently unavailable</span>
+                </div>
+              )}
             </div>
 
             {/* Delivery & policy info */}

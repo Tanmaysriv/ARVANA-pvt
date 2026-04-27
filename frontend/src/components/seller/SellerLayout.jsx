@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { NavLink, Outlet, Navigate, useLocation } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingBag, ChevronLeft, Menu, X, Clock, ShieldCheck, ShieldX } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingBag, Boxes, ChevronLeft, Menu, X, Clock, ShieldCheck, ShieldX } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
 const navItems = [
   { to: '/seller', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/seller/products', icon: Package, label: 'My Products' },
+  { to: '/seller/stock', icon: Boxes, label: 'Stock Management' },
   { to: '/seller/orders', icon: ShoppingBag, label: 'Orders' },
 ]
 

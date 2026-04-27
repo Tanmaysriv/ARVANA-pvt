@@ -56,24 +56,28 @@ router.get('/', async (req, res) => {
       result = await Product.find(query).sort(sortOption).lean()
     }
 
+    // Strip stock count from public response — customers only see inStock boolean
+    const sanitize = (p) => { const { stock, ...rest } = p; return rest }
+
     res.json({
       success: true,
       count: result.length,
-      data: result
+      data: result.map(sanitize)
     })
   } catch (error) {
     res.status(500).json({ success: false, error: error.message })
   }
 })
 
-// GET /api/products/:id — get single product by ID
+// GET /api/products/:id — get single product by ID (stock hidden from public)
 router.get('/:id', async (req, res) => {
   try {
     const product = await Product.findOne({ productId: parseInt(req.params.id) }).lean()
     if (!product) {
       return res.status(404).json({ success: false, error: 'Product not found' })
     }
-    res.json({ success: true, data: product })
+    const { stock, ...publicProduct } = product
+    res.json({ success: true, data: publicProduct })
   } catch (error) {
     res.status(500).json({ success: false, error: error.message })
   }

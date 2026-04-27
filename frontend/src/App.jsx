@@ -31,6 +31,7 @@ import SellerLayout from './components/seller/SellerLayout'
 import SellerDashboard from './components/seller/SellerDashboard'
 import SellerProducts from './components/seller/SellerProducts'
 import SellerOrders from './components/seller/SellerOrders'
+import StockManagement from './components/seller/StockManagement'
 import { useCart } from './context/CartContext'
 
 function AppContent() {
@@ -100,6 +101,7 @@ function AppContent() {
         <Route path="/seller" element={<SellerLayout />}>
           <Route index element={<SellerDashboard />} />
           <Route path="products" element={<SellerProducts />} />
+          <Route path="stock" element={<StockManagement />} />
           <Route path="orders" element={<SellerOrders />} />
         </Route>
       </Routes>

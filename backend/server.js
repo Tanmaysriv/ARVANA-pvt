@@ -14,6 +14,7 @@ import reviewRoutes from './routes/reviews.js'
 import authRoutes from './routes/auth.js'
 import adminRoutes from './routes/admin.js'
 import sellerRoutes from './routes/seller.js'
+import paymentRoutes from './routes/payment.js'
 import User from './models/User.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -50,6 +51,7 @@ app.use('/api/newsletter', newsletterRoutes)
 app.use('/api/reviews', reviewRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/seller', sellerRoutes)
+app.use('/api/payment', paymentRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {
