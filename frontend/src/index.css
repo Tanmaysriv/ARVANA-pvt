@@ -4,7 +4,7 @@
 
 @layer base {
   html {
-    font-size: 14px; /* slightly zoomed-out feel at 100% browser zoom */
+    font-size: 14px;
   }
   
   * {
@@ -20,7 +20,6 @@
       sans-serif;
   }
   
-  /* Smooth transitions for all elements */
   * {
     transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -50,7 +49,7 @@
            hover:scale-[1.02] hover:-translate-y-1;
     @apply dark:bg-slate-800/80 dark:border-slate-700/50 dark:shadow-slate-900/50;
   }
-  
+
   .glass-effect {
     @apply bg-white/70 backdrop-blur-xl border border-white/30 shadow-lg;
     @apply dark:bg-slate-800/70 dark:border-slate-700/30;
@@ -60,10 +59,8 @@
     @apply bg-gradient-to-r from-primary-500 via-secondary-600 to-accent-500 bg-clip-text text-transparent;
     @apply dark:from-primary-400 dark:via-slate-400 dark:to-accent-400;
   }
-  
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -94,4 +91,36 @@
   background: #64748b;
 }
 
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
 
+@keyframes gradient-x {
+  0%, 100% {
+    background-size: 200% 200%;
+    background-position: left center;
+  }
+  50% {
+    background-size: 200% 200%;
+    background-position: right center;
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
