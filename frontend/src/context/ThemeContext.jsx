@@ -11,7 +11,7 @@ export const useTheme = () => {
 }
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('light')
+  const [theme, setTheme] = useState('dark')
 
   // Load theme from localStorage on mount
   useEffect(() => {
@@ -24,15 +24,9 @@ export const ThemeProvider = ({ children }) => {
         document.documentElement.classList.remove('dark')
       }
     } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      const initialTheme = prefersDark ? 'dark' : 'light'
-      setTheme(initialTheme)
-      if (prefersDark) {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
+      // Default to dark — luxury dark-first design
+      setTheme('dark')
+      document.documentElement.classList.add('dark')
     }
   }, [])
 

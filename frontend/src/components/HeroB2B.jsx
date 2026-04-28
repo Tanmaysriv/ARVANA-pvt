@@ -1,144 +1,306 @@
-import { motion } from 'framer-motion'
-import { ArrowRight, Camera, Truck, RefreshCcw, ShieldCheck, Sparkles } from 'lucide-react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { ArrowRight, Camera, Truck, RefreshCcw, ShieldCheck, Sparkles, Play, ChevronDown } from 'lucide-react'
+import { useRef } from 'react'
+
+const MARQUEE_ITEMS = [
+  '✦ AR Virtual Try-On',
+  '✦ Free Shipping Over ₹999',
+  '✦ 30-Day Returns',
+  '✦ 12,000+ Happy Customers',
+  '✦ Secure Checkout',
+  '✦ New Arrivals Every Week',
+  '✦ AR Virtual Try-On',
+  '✦ Free Shipping Over ₹999',
+  '✦ 30-Day Returns',
+  '✦ 12,000+ Happy Customers',
+  '✦ Secure Checkout',
+  '✦ New Arrivals Every Week',
+]
+
+const TRUST_ITEMS = [
+  { icon: Camera,     label: 'AR Try-On',       sub: 'See it on you first',   color: 'from-primary-500 to-violet-600', glow: 'shadow-primary-500/20' },
+  { icon: Truck,      label: 'Free Shipping',    sub: 'Orders over ₹999',      color: 'from-emerald-500 to-teal-600',   glow: 'shadow-emerald-500/20' },
+  { icon: RefreshCcw, label: '30-Day Returns',   sub: 'No questions asked',    color: 'from-pink-500 to-rose-600',      glow: 'shadow-pink-500/20'    },
+  { icon: ShieldCheck, label: 'Secure Checkout', sub: '100% protected',        color: 'from-amber-500 to-orange-600',   glow: 'shadow-amber-500/20'   },
+]
+
+const containerVariants = {
+  hidden:  { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
+}
+
+const itemVariants = {
+  hidden:  { opacity: 0, y: 35 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 90, damping: 18 } },
+}
 
 const HeroB2B = () => {
-  // Staggered animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.1 }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 15 }
-    }
-  }
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const bgY    = useTransform(scrollYProgress, [0, 1], ['0%', '25%'])
+  const textY  = useTransform(scrollYProgress, [0, 1], ['0%', '30%'])
+  const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0])
 
   return (
-    <section id="home" className="relative pt-24 pb-4 bg-slate-50 dark:bg-slate-950 overflow-hidden">
-      {/* Animated Background Gradients */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/20 dark:bg-purple-600/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob" />
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-sky-500/20 dark:bg-sky-600/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000" />
-      <div className="absolute -bottom-8 left-1/3 w-96 h-96 bg-pink-500/20 dark:bg-pink-600/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000" />
+    <section
+      id="home"
+      ref={heroRef}
+      className="relative min-h-screen flex flex-col overflow-hidden bg-obsidian-950"
+    >
+      {/* ── Parallax Background Image ── */}
+      <motion.div
+        style={{ y: bgY }}
+        className="absolute inset-0 z-0"
+      >
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-20"
+          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&q=80')" }}
+        />
+      </motion.div>
 
-      {/* Main Banner */}
-      <div className="container mx-auto px-4 sm:px-6 relative z-10">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="relative rounded-3xl overflow-hidden bg-slate-900 min-h-[500px] md:min-h-[560px] shadow-2xl shadow-sky-900/20"
-        >
-          {/* Background Image with Parallax feel */}
-          <motion.div
-            initial={{ scale: 1.1 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.5, ease: "easeOut" }}
-            className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
-            style={{ backgroundImage: "url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80')" }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-900/90 to-slate-900/30" />
+      {/* ── Aurora Orbs ── */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full bg-primary-600/20 blur-[120px] animate-blob" />
+        <div className="absolute top-1/3 right-0 w-[500px] h-[500px] rounded-full bg-violet-600/15 blur-[100px] animate-blob animation-delay-3000" />
+        <div className="absolute -bottom-20 left-1/3 w-[600px] h-[600px] rounded-full bg-primary-800/20 blur-[120px] animate-blob animation-delay-2000" />
+      </div>
 
-          {/* Content */}
-          <div className="relative z-10 flex items-center min-h-[500px] md:min-h-[560px] px-8 md:px-16">
+      {/* ── Subtle Grid ── */}
+      <div className="absolute inset-0 z-0 bg-grid opacity-100 pointer-events-none" />
+
+      {/* ── Main Hero Content ── */}
+      <motion.div
+        style={{ y: textY, opacity }}
+        className="relative z-10 flex-1 flex items-center"
+      >
+        <div className="container mx-auto px-6 sm:px-8 py-32 md:py-0">
+          <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
+
+            {/* Left — Copy */}
             <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="visible"
               className="max-w-2xl"
             >
-              <motion.div variants={itemVariants}>
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-500/20 to-purple-500/20 border border-sky-500/30 text-sky-300 text-sm font-bold tracking-wide px-5 py-2 rounded-full mb-6 backdrop-blur-sm shadow-inner shadow-white/5">
-                  <Sparkles className="w-4 h-4 text-sky-400 animate-pulse" />
+              {/* Eyebrow badge */}
+              <motion.div variants={itemVariants} className="mb-8">
+                <span className="section-eyebrow">
+                  <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                   Next-Gen AR Virtual Try-On
-                </div>
+                </span>
               </motion.div>
 
-              <motion.h1 
+              {/* Headline */}
+              <motion.h1
                 variants={itemVariants}
-                className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-6 tracking-tight"
+                className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-white leading-[1.05] mb-6 tracking-tight font-sora"
               >
-                Try It On.<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-purple-400 to-pink-400 animate-gradient-x">
-                  Love It. Buy It.
+                Try It On.
+                <br />
+                <span className="gradient-text animate-gradient-x">
+                  Love It.
                 </span>
+                <br />
+                <span className="text-white/90">Buy It.</span>
               </motion.h1>
 
-              <motion.p 
+              {/* Sub copy */}
+              <motion.p
                 variants={itemVariants}
-                className="text-lg md:text-xl text-slate-300 mb-10 max-w-xl leading-relaxed font-light"
+                className="text-lg md:text-xl text-slate-400 mb-10 max-w-lg leading-relaxed font-light"
               >
-                Experience the future of fashion. See how shoes, bags, watches & clothes look on you — live from your camera. No guesswork, just confidence.
+                Experience the future of fashion — see exactly how shoes, bags,
+                watches &amp; clothes look on{' '}
+                <em className="text-white not-italic font-medium">you</em>,
+                live from your camera. No guesswork, just confidence.
               </motion.p>
 
+              {/* CTAs */}
               <motion.div variants={itemVariants} className="flex flex-wrap gap-4">
-                <motion.a 
+                <motion.a
                   whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  href="#catalog" 
-                  className="relative overflow-hidden group bg-gradient-to-r from-sky-500 to-blue-600 text-white font-semibold text-base px-8 py-4 rounded-xl shadow-lg shadow-sky-500/30 flex items-center gap-3 transition-all"
+                  whileTap={{ scale: 0.96 }}
+                  href="#catalog"
+                  className="btn-primary flex items-center gap-2.5 text-base"
                 >
-                  <span className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
-                  <span className="relative z-10 flex items-center gap-2">Shop Collection <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" /></span>
+                  Shop Collection
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </motion.a>
-                
-                <motion.a 
-                  whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
-                  whileTap={{ scale: 0.95 }}
-                  href="#catalog" 
-                  className="inline-flex items-center gap-2 font-medium text-base px-8 py-4 border-2 border-white/20 text-white rounded-xl backdrop-blur-sm transition-all"
+
+                <motion.a
+                  whileHover={{ scale: 1.04, backgroundColor: 'rgba(255,255,255,0.07)' }}
+                  whileTap={{ scale: 0.96 }}
+                  href="#catalog"
+                  className="btn-secondary flex items-center gap-2.5 text-base"
                 >
+                  <span className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center">
+                    <Play className="w-3 h-3 fill-white ml-0.5" />
+                  </span>
                   Explore AR Preview
                 </motion.a>
               </motion.div>
+
+              {/* Social proof pill */}
+              <motion.div
+                variants={itemVariants}
+                className="mt-10 flex items-center gap-4"
+              >
+                <div className="flex -space-x-2">
+                  {[1, 3, 5, 7, 9].map(n => (
+                    <img
+                      key={n}
+                      src={`https://i.pravatar.cc/40?img=${n}`}
+                      alt=""
+                      className="w-8 h-8 rounded-full border-2 border-obsidian-950 object-cover"
+                    />
+                  ))}
+                </div>
+                <div>
+                  <div className="flex gap-0.5">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-amber-400 text-xs">★</span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    <span className="text-white font-semibold">12,000+</span> happy customers
+                  </p>
+                </div>
+              </motion.div>
+            </motion.div>
+
+            {/* Right — Floating Image Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 60, scale: 0.92 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+              className="hidden lg:flex justify-center items-center"
+            >
+              <div className="relative">
+                {/* Main product card */}
+                <motion.div
+                  animate={{ y: [0, -12, 0] }}
+                  transition={{ repeat: Infinity, duration: 4, ease: 'easeInOut' }}
+                  className="relative z-10 rounded-3xl overflow-hidden shadow-luxury border border-white/10"
+                  style={{ width: 340, height: 420 }}
+                >
+                  <img
+                    src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700&q=90"
+                    alt="Featured Product"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-obsidian-950/80 via-transparent to-transparent" />
+
+                  {/* AR badge floating */}
+                  <div className="absolute top-5 right-5 bg-primary-500/90 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-glow">
+                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    AR LIVE
+                  </div>
+
+                  <div className="absolute bottom-5 left-5 right-5">
+                    <p className="text-white/60 text-xs uppercase tracking-wider mb-0.5">Nike</p>
+                    <p className="text-white font-semibold font-sora">Air Max 270</p>
+                    <p className="text-primary-400 font-bold">₹8,999</p>
+                  </div>
+                </motion.div>
+
+                {/* Floating stat cards */}
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 3.5, ease: 'easeInOut', delay: 0.5 }}
+                  className="absolute -left-16 top-12 glass-dark rounded-2xl p-3.5 flex items-center gap-3 min-w-[160px] shadow-luxury z-20"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-white text-xs font-semibold">Free Delivery</p>
+                    <p className="text-slate-400 text-[10px]">Orders ₹999+</p>
+                  </div>
+                </motion.div>
+
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ repeat: Infinity, duration: 5, ease: 'easeInOut', delay: 1 }}
+                  className="absolute -right-14 bottom-16 glass-dark rounded-2xl p-3.5 min-w-[140px] shadow-luxury z-20"
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    {[...Array(5)].map((_, i) => (
+                      <span key={i} className="text-amber-400 text-xs">★</span>
+                    ))}
+                  </div>
+                  <p className="text-white text-sm font-bold">4.9 / 5</p>
+                  <p className="text-slate-400 text-[10px]">2,841 reviews</p>
+                </motion.div>
+
+                {/* Glow blob behind card */}
+                <div className="absolute inset-0 -z-10 rounded-3xl bg-primary-600/30 blur-3xl scale-110" />
+              </div>
             </motion.div>
           </div>
+        </div>
+      </motion.div>
+
+      {/* ── Scroll Indicator ── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 2 }}
+        className="relative z-10 flex justify-center pb-8"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ repeat: Infinity, duration: 1.8 }}
+          className="flex flex-col items-center gap-1 text-slate-500 cursor-pointer"
+          onClick={() => document.getElementById('categories')?.scrollIntoView({ behavior: 'smooth' })}
+        >
+          <span className="text-[10px] uppercase tracking-widest">Scroll</span>
+          <ChevronDown className="w-4 h-4" />
         </motion.div>
+      </motion.div>
+
+      {/* ── Marquee Strip ── */}
+      <div className="relative z-10 border-t border-white/6 bg-obsidian-900/60 backdrop-blur-sm overflow-hidden py-3.5">
+        <div className="marquee-track">
+          {MARQUEE_ITEMS.map((item, i) => (
+            <span
+              key={i}
+              className="inline-block px-8 text-[11px] font-semibold uppercase tracking-widest text-slate-400 whitespace-nowrap"
+            >
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
 
-      {/* Trust Strip - Animated Scroll-in */}
-      <div className="container mx-auto px-4 sm:px-6 mt-8 relative z-20">
-        <motion.div 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
-          }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4"
-        >
-          {[
-            { icon: Camera, label: 'AR Virtual Try-On', sub: 'See it on you first', color: 'from-sky-500 to-blue-500', shadow: 'shadow-sky-500/20' },
-            { icon: Truck, label: 'Free Shipping', sub: 'On orders over ₹999', color: 'from-emerald-400 to-teal-500', shadow: 'shadow-emerald-500/20' },
-            { icon: RefreshCcw, label: '30-Day Returns', sub: 'No questions asked', color: 'from-purple-500 to-pink-500', shadow: 'shadow-purple-500/20' },
-            { icon: ShieldCheck, label: 'Secure Checkout', sub: '100% protected', color: 'from-amber-400 to-orange-500', shadow: 'shadow-orange-500/20' }
-          ].map((item, i) => (
-            <motion.div 
-              key={i} 
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
-              }}
-              whileHover={{ y: -5, scale: 1.02 }}
-              className="group flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-lg shadow-slate-200/50 dark:shadow-none hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300"
-            >
-              <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} ${item.shadow} shadow-lg text-white flex items-center justify-center transform group-hover:rotate-6 transition-transform duration-300`}>
-                <item.icon className="w-6 h-6" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-sm md:text-base font-bold text-slate-900 dark:text-white truncate">{item.label}</div>
-                <div className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-1">{item.sub}</div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+      {/* ── Trust Cards ── */}
+      <div className="relative z-10 bg-obsidian-900/80 backdrop-blur-sm border-t border-white/5">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-40px' }}
+            variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
+            className="grid grid-cols-2 md:grid-cols-4"
+          >
+            {TRUST_ITEMS.map((item, i) => (
+              <motion.div
+                key={i}
+                variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
+                whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
+                className={`group flex items-center gap-4 py-5 px-5 transition-colors duration-300 ${i < 3 ? 'border-r border-white/5' : ''}`}
+              >
+                <div className={`flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${item.color} ${item.glow} shadow-lg text-white flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                  <item.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-white font-sora">{item.label}</div>
+                  <div className="text-xs text-slate-500 mt-0.5">{item.sub}</div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </section>
   )

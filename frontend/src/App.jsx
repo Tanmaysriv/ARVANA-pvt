@@ -61,7 +61,7 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900">
+    <div className="min-h-screen bg-white dark:bg-obsidian-950">
       <Header />
       
       <Routes>

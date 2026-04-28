@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Menu, X, Sparkles, ShoppingCart, Heart, Sun, Moon, Search, ArrowRight, User, LogOut, ChevronDown, Package, Shield } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../context/ThemeContext'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
@@ -134,97 +135,176 @@ const Header = () => {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 glass-effect shadow-lg backdrop-blur-xl border-b border-white/20 dark:border-slate-700/20">
+    <header className="fixed top-0 left-0 right-0 z-40 glass-effect shadow-lg backdrop-blur-2xl border-b border-white/20 dark:border-slate-700/30">
       <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 group">
-            <div className="relative">
-              <Sparkles className="w-9 h-9 text-sky-600 animate-pulse-slow" />
-              <div className="absolute inset-0 bg-sky-400 blur-xl opacity-30 group-hover:opacity-50 transition-opacity"></div>
-            </div>
-            <span className="text-3xl font-bold gradient-text hover:scale-105 transition-transform cursor-pointer">
-              ARVANA
-            </span>
-          </Link>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link to="/" className="flex items-center space-x-3 group">
+              <motion.div 
+                className="relative"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              >
+                <Sparkles className="w-9 h-9 text-sky-600 drop-shadow-lg" />
+                <motion.div 
+                  className="absolute inset-0 bg-sky-400 blur-xl opacity-30 group-hover:opacity-60 transition-opacity"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+              </motion.div>
+              <motion.span 
+                className="text-3xl font-bold gradient-text hover:scale-105 cursor-pointer"
+                whileHover={{ skewY: 2 }}
+              >
+                ARVANA
+              </motion.span>
+            </Link>
+          </motion.div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
-              Home
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-            </Link>
+            <motion.div whileHover={{ y: -2 }}>
+              <Link to="/" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
+                Home
+                <motion.span 
+                  className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600"
+                  initial={{ width: 0 }}
+                  whileHover={{ width: '100%' }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
+            </motion.div>
             <div
               className="relative"
               onMouseEnter={() => setShowCatDropdown(true)}
               onMouseLeave={() => setShowCatDropdown(false)}
             >
-              <Link to="/#categories" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
-                Categories
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-              {showCatDropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50">
-                  <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 min-w-[180px]">
-                    {categoryLinks.map(c => (
-                      <button
-                        key={c.slug}
-                        onClick={() => { navigate(`/category/${c.slug}`); setShowCatDropdown(false) }}
-                        className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-sky-900/20 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-3 font-medium"
-                      >
-                        <span className="text-lg">{c.icon}</span>
-                        {c.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <motion.div whileHover={{ y: -2 }}>
+                <Link to="/#categories" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group flex items-center gap-1">
+                  Categories
+                  <motion.span animate={{ rotate: showCatDropdown ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                    <ChevronDown className="w-4 h-4" />
+                  </motion.span>
+                  <motion.span 
+                    className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600"
+                    initial={{ width: 0 }}
+                    whileHover={{ width: '100%' }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </Link>
+              </motion.div>
+              <AnimatePresence>
+                {showCatDropdown && (
+                  <motion.div 
+                    className="absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 py-3 min-w-[200px] backdrop-blur-sm">
+                      {categoryLinks.map((c, i) => (
+                        <motion.button
+                          key={c.slug}
+                          onClick={() => { navigate(`/category/${c.slug}`); setShowCatDropdown(false) }}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.05 }}
+                          whileHover={{ x: 4, backgroundColor: 'rgba(14, 165, 233, 0.1)' }}
+                          className="w-full text-left px-5 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center gap-3 font-medium"
+                        >
+                          <span className="text-xl">{c.icon}</span>
+                          {c.label}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-            <Link to="/#catalog" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
-              Shop
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-            </Link>
-            <Link to="/#contact" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
-              Contact
-              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600 group-hover:w-full transition-all duration-300"></span>
-            </Link>
+            <motion.div whileHover={{ y: -2 }}>
+              <Link to="/#catalog" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
+                Shop
+                <motion.span 
+                  className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600"
+                  initial={{ width: 0 }}
+                  whileHover={{ width: '100%' }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ y: -2 }}>
+              <Link to="/#contact" className="relative text-slate-700 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 transition-all font-medium group">
+                Contact
+                <motion.span 
+                  className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-sky-600 to-purple-600"
+                  initial={{ width: 0 }}
+                  whileHover={{ width: '100%' }}
+                  transition={{ duration: 0.3 }}
+                />
+              </Link>
+            </motion.div>
 
             {/* Search */}
             <div className="relative" ref={searchContainerRef}>
               {!searchOpen ? (
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setSearchOpen(true)}
-                  className="p-2.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-110 active:scale-95"
+                  className="p-2.5 rounded-lg bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 hover:shadow-lg transition-all duration-300"
                   aria-label="Search"
                 >
                   <Search className="w-5 h-5 text-slate-700 dark:text-slate-300" />
-                </button>
+                </motion.button>
               ) : (
-                <form onSubmit={handleSearchSubmit} className="flex items-center">
+                <motion.form 
+                  onSubmit={handleSearchSubmit}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center"
+                >
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
+                    <motion.input
                       ref={searchInputRef}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search products..."
-                      className="w-64 pl-10 pr-10 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all"
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: 256, opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="w-64 pl-10 pr-10 py-2.5 rounded-xl border border-sky-300 dark:border-sky-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all shadow-lg"
                     />
-                    <button
+                    <motion.button
                       type="button"
                       onClick={() => { setSearchOpen(false); setSearchQuery(''); setSuggestions([]) }}
+                      whileHover={{ rotate: 90 }}
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 dark:hover:bg-slate-600 rounded-full transition-colors"
                     >
                       <X className="w-4 h-4 text-slate-400" />
-                    </button>
+                    </motion.button>
                   </div>
-                </form>
+                </motion.form>
               )}
 
               {/* Suggestions Dropdown */}
-              {searchOpen && searchQuery.trim().length >= 2 && (
-                <div className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+              <AnimatePresence>
+                {searchOpen && searchQuery.trim().length >= 2 && (
+                  <motion.div 
+                    className="absolute top-full right-0 mt-3 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50 backdrop-blur-sm"
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                  >
                   {loadingSuggestions ? (
                     <div className="p-4 space-y-3">
                       {[...Array(3)].map((_, i) => (
@@ -301,14 +381,17 @@ const Header = () => {
                       <p className="text-sm text-slate-500 dark:text-slate-400">No products found for "{searchQuery}"</p>
                     </div>
                   )}
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
             
             {/* Theme Toggle Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 180 }}
+              whileTap={{ scale: 0.95 }}
               onClick={toggleTheme}
-              className="p-2.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-110 active:scale-95"
+              className="p-2.5 rounded-lg bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 hover:shadow-lg transition-all duration-300"
               aria-label="Toggle theme"
             >
               {theme === 'dark' ? (
@@ -316,51 +399,70 @@ const Header = () => {
               ) : (
                 <Moon className="w-5 h-5 text-slate-700" />
               )}
-            </button>
+            </motion.button>
 
             {/* Wishlist Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/wishlist')}
-              className="relative p-2.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-110 active:scale-95"
+              className="relative p-2.5 rounded-lg bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 hover:shadow-lg transition-all duration-300"
               aria-label="Wishlist"
             >
               <Heart className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                <motion.span 
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-red-500 to-rose-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                >
                   {wishlistCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
 
             {/* Cart Button */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/cart')}
-              className="relative p-2.5 rounded-lg bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300 hover:scale-110 active:scale-95"
+              className="relative p-2.5 rounded-lg bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 hover:shadow-lg transition-all duration-300"
               aria-label="Shopping Cart"
             >
               <ShoppingCart className="w-5 h-5 text-slate-700 dark:text-slate-300" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-sky-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                <motion.span 
+                  className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-sky-500 to-sky-600 text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                >
                   {cartCount}
-                </span>
+                </motion.span>
               )}
-            </button>
+            </motion.button>
 
             {/* User / Auth */}
             {isAuthenticated && user ? (
               <div className="relative" ref={userDropdownRef}>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setShowUserDropdown(!showUserDropdown)}
-                  className="flex items-center gap-2 pl-3 pr-2 py-2 rounded-xl bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300"
+                  className="flex items-center gap-2 pl-3 pr-2 py-2 rounded-xl bg-gradient-to-r from-sky-200 to-sky-300 dark:from-sky-700 dark:to-sky-600 hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="w-7 h-7 rounded-full bg-sky-600 text-white flex items-center justify-center text-xs font-bold uppercase">
+                  <motion.div 
+                    className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-500 to-sky-700 text-white flex items-center justify-center text-xs font-bold uppercase shadow-md"
+                    whileHover={{ scale: 1.2 }}
+                  >
                     {user.name?.charAt(0) || 'U'}
-                  </div>
+                  </motion.div>
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-300 max-w-[80px] truncate">
                     {user.name?.split(' ')[0]}
                   </span>
                   <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${showUserDropdown ? 'rotate-180' : ''}`} />
-                </button>
+                </motion.button>
 
                 {showUserDropdown && (
                   <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-2 z-50">
