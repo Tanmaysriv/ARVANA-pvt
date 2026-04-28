@@ -6,7 +6,7 @@ import api from '../../services/api'
 const emptyProduct = {
   name: '', brand: '', category: '', price: '', originalPrice: '',
   description: '', image: '', rating: 0, reviewCount: 0,
-  colors: '', sizes: '', badge: '', stock: 0,
+  colors: '', sizes: '', badge: '', stock: 0, glbModel: ''
 }
 
 const SellerProducts = () => {
@@ -21,7 +21,9 @@ const SellerProducts = () => {
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
   const [imageMode, setImageMode] = useState('upload')
+  const [glbMode, setGlbMode] = useState('url')
   const fileInputRef = useRef(null)
+  const glbInputRef = useRef(null)
 
   const loadProducts = async () => {
     try {
@@ -73,34 +75,41 @@ const SellerProducts = () => {
       sizes: (product.sizes || []).join(', '),
       badge: product.badge || '',
       stock: product.stock || 0,
+      glbModel: product.glbModel || '',
     })
     setError('')
     setImageMode(product.image ? 'url' : 'upload')
+    setGlbMode(product.glbModel ? 'url' : 'upload')
     setShowModal(true)
   }
 
-  const handleImageUpload = async (file) => {
+  const handleImageUpload = async (file, isGlb = false) => {
     if (!file) return
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image must be under 5MB')
+    const maxMb = isGlb ? 50 : 5
+    if (file.size > maxMb * 1024 * 1024) {
+      setError(`${isGlb ? '3D Model' : 'Image'} must be under ${maxMb}MB`)
       return
     }
     setUploading(true)
     setError('')
     try {
       const res = await api.seller.uploadImage(file)
-      setForm(f => ({ ...f, image: res.data.url }))
+      if (isGlb) {
+        setForm(f => ({ ...f, glbModel: res.data.url }))
+      } else {
+        setForm(f => ({ ...f, image: res.data.url }))
+      }
     } catch (err) {
-      setError(err.message || 'Failed to upload image')
+      setError(err.message || `Failed to upload ${isGlb ? '3D Model' : 'image'}`)
     } finally {
       setUploading(false)
     }
   }
 
-  const handleDrop = (e) => {
+  const handleDrop = (e, isGlb = false) => {
     e.preventDefault()
     const file = e.dataTransfer?.files?.[0]
-    if (file && file.type.startsWith('image/')) handleImageUpload(file)
+    if (file) handleImageUpload(file, isGlb)
   }
 
   const handleSave = async () => {
@@ -131,6 +140,7 @@ const SellerProducts = () => {
         sizes: form.sizes ? form.sizes.split(',').map(s => s.trim()).filter(Boolean) : [],
         badge: form.badge.trim() || null,
         stock: Math.max(0, Number(form.stock) || 0),
+        glbModel: form.glbModel?.trim() || null,
       }
 
       if (editing) {
@@ -357,7 +367,7 @@ const SellerProducts = () => {
 
                   {imageMode === 'upload' ? (
                     <div
-                      onDrop={handleDrop}
+                      onDrop={e => handleDrop(e, false)}
                       onDragOver={e => e.preventDefault()}
                       onClick={() => fileInputRef.current?.click()}
                       className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
@@ -371,7 +381,7 @@ const SellerProducts = () => {
                         type="file"
                         accept="image/jpeg,image/png,image/webp,image/gif"
                         className="hidden"
-                        onChange={e => handleImageUpload(e.target.files?.[0])}
+                        onChange={e => handleImageUpload(e.target.files?.[0], false)}
                       />
                       {uploading ? (
                         <div className="flex flex-col items-center gap-2">
@@ -445,6 +455,68 @@ const SellerProducts = () => {
                     <input type="number" min="0" value={form.stock} onChange={e => setForm(f => ({ ...f, stock: e.target.value }))} placeholder="100"
                       className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
                   </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400">GLB Model (Optional 3D View)</label>
+                    <div className="flex rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700">
+                      <button type="button" onClick={() => setGlbMode('upload')}
+                        className={`px-2.5 py-1 text-[10px] font-semibold flex items-center gap-1 transition-colors ${glbMode === 'upload' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
+                        <Upload className="w-3 h-3" /> Upload
+                      </button>
+                      <button type="button" onClick={() => setGlbMode('url')}
+                        className={`px-2.5 py-1 text-[10px] font-semibold flex items-center gap-1 transition-colors ${glbMode === 'url' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
+                        <LinkIcon className="w-3 h-3" /> URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {glbMode === 'upload' ? (
+                    <div
+                      onDrop={e => handleDrop(e, true)}
+                      onDragOver={e => e.preventDefault()}
+                      onClick={() => glbInputRef.current?.click()}
+                      className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-colors ${
+                        uploading
+                          ? 'border-emerald-400 bg-emerald-50/50 dark:bg-emerald-900/10'
+                          : 'border-slate-300 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-600 bg-slate-50 dark:bg-slate-800'
+                      }`}
+                    >
+                      <input
+                        ref={glbInputRef}
+                        type="file"
+                        accept=".glb,.gltf"
+                        className="hidden"
+                        onChange={e => handleImageUpload(e.target.files?.[0], true)}
+                      />
+                      {uploading ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <div className="w-8 h-8 border-3 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                          <p className="text-xs text-emerald-600 font-medium">Uploading...</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <Upload className="w-8 h-8 text-slate-400" />
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Click to upload</span> or drag & drop
+                          </p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500">GLB, GLTF (max 50MB)</p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <input type="text" value={form.glbModel} onChange={e => setForm(f => ({ ...f, glbModel: e.target.value }))} placeholder="https://example.com/model.glb"
+                      className="w-full px-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 outline-none" />
+                  )}
+                  {form.glbModel && glbMode === 'upload' && (
+                    <div className="mt-2 flex items-center justify-between p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800">
+                      <span className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[200px]">{form.glbModel.split('/').pop()}</span>
+                      <button type="button" onClick={() => setForm(f => ({ ...f, glbModel: '' }))} className="text-red-500 hover:text-red-600">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
 

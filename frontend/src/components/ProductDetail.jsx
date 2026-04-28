@@ -62,6 +62,7 @@ const ProductDetail = ({ onTryOn }) => {
   const [quantity, setQuantity] = useState(1)
   const [showSizeError, setShowSizeError] = useState(false)
   const [activeTab, setActiveTab] = useState('description')
+  const [selectedImage, setSelectedImage] = useState(null)
 
   // 3D / QR
   const [show3DViewer, setShow3DViewer] = useState(false)
@@ -110,6 +111,7 @@ const ProductDetail = ({ onTryOn }) => {
     setReviewRating(5)
     setReviewComment('')
     setReviewMsg(null)
+    setSelectedImage(null)
   }, [id])
 
   // Submit review
@@ -180,6 +182,9 @@ const ProductDetail = ({ onTryOn }) => {
 
   const meta = categoryMeta[product.category] || { label: 'Shop', slug: '' }
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  
+  const allImages = product.images?.length > 0 ? product.images : [product.image].filter(Boolean)
+  const displayImage = selectedImage || product.image
 
   const handleAddToCart = () => {
     if (product.sizes.length > 1 && !selectedSize) {
@@ -231,7 +236,7 @@ const ProductDetail = ({ onTryOn }) => {
               {/* Main Image */}
               <div className="relative bg-white dark:bg-slate-800 rounded-2xl overflow-hidden aspect-[4/5] lg:aspect-[3/4] max-h-[75vh] shadow-sm border border-slate-100 dark:border-slate-700">
                 <img
-                  src={product.image}
+                  src={displayImage}
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
@@ -276,6 +281,25 @@ const ProductDetail = ({ onTryOn }) => {
                   }`} />
                 </button>
               </div>
+
+              {/* Thumbnail Gallery */}
+              {allImages.length > 1 && (
+                <div className="flex gap-3 mt-4 overflow-x-auto pb-2 scrollbar-hide">
+                  {allImages.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedImage(img)}
+                      className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
+                        displayImage === img
+                          ? 'border-sky-500 ring-2 ring-sky-200 dark:ring-sky-800'
+                          : 'border-transparent hover:border-sky-300 dark:hover:border-sky-600'
+                      }`}
+                    >
+                      <img src={img} alt={`${product.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Quick action buttons below image */}
               <div className="flex gap-3 mt-4">

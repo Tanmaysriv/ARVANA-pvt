@@ -26,13 +26,20 @@ const storage = multer.diskStorage({
   },
 })
 const fileFilter = (req, file, cb) => {
-  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
-  cb(allowed.includes(file.mimetype) ? null : new Error('Only image files allowed'), allowed.includes(file.mimetype))
+  const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'model/gltf-binary', 'model/gltf+json', 'application/octet-stream']
+  const ext = path.extname(file.originalname).toLowerCase()
+  const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.glb', '.gltf']
+  
+  if (allowedMimes.includes(file.mimetype) || allowedExts.includes(ext)) {
+    cb(null, true)
+  } else {
+    cb(new Error('Only images and 3D models (.glb, .gltf) are allowed'), false)
+  }
 }
-const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } })
+const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } })
 
 router.post('/upload', upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ success: false, error: 'No image file' })
+  if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' })
   res.json({ success: true, data: { url: `/uploads/${req.file.filename}` } })
 })
 

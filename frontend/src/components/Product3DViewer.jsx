@@ -45,6 +45,27 @@ const ProductModel = ({ productId, product, color = '#3b82f6', rotation, useGLTF
 
   const modelData = getModelData()
 
+  const glbUrl = product?.glbModel?.startsWith('/uploads')
+    ? `http://localhost:5000${product.glbModel}`
+    : product?.glbModel
+
+  // Try to load custom GLTF if seller provided one
+  if (useGLTF && !modelError && glbUrl) {
+    return (
+      <Suspense fallback={<ModelLoadingFallback />}>
+        <ErrorBoundary onError={() => setModelError(true)}>
+          <GLTFModel
+            url={glbUrl}
+            scale={1.5}
+            position={[0, -1, 0]}
+            rotation={rotation}
+            color={color}
+          />
+        </ErrorBoundary>
+      </Suspense>
+    )
+  }
+
   // Try to load GLTF model first for predefined products
   if (useGLTF && !modelError && !modelData.isDynamic) {
     return (

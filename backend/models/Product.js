@@ -51,6 +51,10 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  images: {
+    type: [String],
+    default: []
+  },
   description: {
     type: String,
     required: true
@@ -64,6 +68,10 @@ const productSchema = new mongoose.Schema({
     default: []
   },
   badge: {
+    type: String,
+    default: null
+  },
+  glbModel: {
     type: String,
     default: null
   },
