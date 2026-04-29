@@ -19,15 +19,12 @@ export default defineConfig({
     esbuildOptions: {
       target: 'esnext',
       define: {
-        'global': 'globalThis',
-        'module': '{}',
-        'exports': '{}'
+        global: 'globalThis'
       }
     }
   },
   define: {
-    'global': 'globalThis',
-    'module': '{}',
+    global: 'globalThis',
     'process.env': {}
   },
   build: {

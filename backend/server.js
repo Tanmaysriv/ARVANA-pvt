@@ -25,8 +25,33 @@ dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000
 
+const defaultAllowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://arvana-frontend.vercel.app',
+]
+
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim()).filter(Boolean)
+  : defaultAllowedOrigins
+
 // Middleware
-app.use(cors())
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow server-to-server calls, curl, and same-origin requests without Origin header.
+    if (!origin) return callback(null, true)
+
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.vercel.app')
+
+    if (isAllowed) return callback(null, true)
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`))
+  },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}))
 app.use(express.json())
 
 // Serve uploaded images

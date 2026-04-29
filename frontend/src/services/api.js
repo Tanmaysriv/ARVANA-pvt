@@ -1,8 +1,20 @@
 // API helper for communicating with the backend
 // In development, Vite proxy forwards /api to localhost:5000
-// In production, configure the base URL accordingly
+// In production, use VITE_API_URL or fall back to the deployed backend URL.
 
-const API_BASE = '/api'
+const DEPLOYED_API_ORIGIN = 'https://arvana-backend-xd6m.onrender.com'
+
+const resolveApiBase = () => {
+  const configured = import.meta.env.VITE_API_URL?.trim()
+  const origin = configured || (import.meta.env.PROD ? DEPLOYED_API_ORIGIN : '')
+
+  if (!origin) return '/api'
+
+  const normalized = origin.replace(/\/+$/, '')
+  return normalized.endsWith('/api') ? normalized : `${normalized}/api`
+}
+
+const API_BASE = resolveApiBase()
 
 // ─── Helper: normalise a product from the backend ───
 // Backend uses `productId`, frontend expects `id`
